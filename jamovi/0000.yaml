@@ -1,0 +1,28 @@
+---
+title: What the Package Does (Title Case)
+name: MachineLearning
+version: 0.0.0
+jms: '1.0'
+authors:
+  - Who wrote it
+maintainer: The package maintainer <yourself@somewhere.net>
+date: '1970-01-01'
+type: R
+description: >-
+  More about what it does (maybe more than one line) Use four spaces when
+  indenting paragraphs within the Description.
+analyses:
+  - title: Decision tree
+    name: classification
+    ns: MachineLearning
+    menuGroup: Classification
+    menuTitle: Decision tree
+  - title: Experimenter
+    name: experimenter
+    ns: MachineLearning
+    menuGroup: Classification
+    menuTitle: Experimenter
+usesNative: true
+minApp: 1.0.8
+
+...

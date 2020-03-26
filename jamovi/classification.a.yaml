@@ -1,0 +1,58 @@
+---
+name:  classification
+title: Decision tree
+menuGroup: Classification
+version: '1.0.0'
+jas: '1.2'
+
+options:
+    - name: data
+      type: Data
+
+    - name: dep
+      title: Dependent Variable
+      type: Variable
+
+    - name: indep
+      title: Independent Variables
+      type: Variables
+
+    - name: testSize
+      title:  Testing
+      type: Number
+
+    - name: noOfFolds
+      title:  No. of folds
+      type: Number
+
+    - name: testing
+      title: Testing
+      type: List
+      options:
+        - name: trainSet
+          title: Train set
+        - name: split
+          title: Train/test split
+        - name: crossValidation
+          title: Cross-validation
+
+    - name: reporting
+      type: NMXList
+      title: Reporting
+      options:
+        - name: classificationMatrix
+          title: classification Matrix
+        - name: confusionMatrix
+          title: confusion Matrix
+        - name: AUC
+          title: AUC
+
+    - name: classifier
+      title: Classifier
+      type: List
+      options:
+        - name: simpleDecisionTree
+          title: Simple Decision Tree
+        - name: randomForest
+          title: random forest
+...
