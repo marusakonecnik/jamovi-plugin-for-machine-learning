@@ -12,7 +12,16 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             noOfFolds = NULL,
             testing = NULL,
             reporting = NULL,
-            classifier = NULL, ...) {
+            classifier = NULL,
+            minSplit = NULL,
+            minBucket = NULL,
+            complecity = NULL,
+            maxComplete = NULL,
+            maxSurrogate = NULL,
+            unsurrogate = NULL,
+            noCrossValidations = NULL,
+            maxDepth = NULL,
+            plotDecisionTree = FALSE, ...) {
 
             super$initialize(
                 package='MachineLearning',
@@ -52,6 +61,34 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
                 options=list(
                     "simpleDecisionTree",
                     "randomForest"))
+            private$..minSplit <- jmvcore::OptionNumber$new(
+                "minSplit",
+                minSplit)
+            private$..minBucket <- jmvcore::OptionNumber$new(
+                "minBucket",
+                minBucket)
+            private$..complecity <- jmvcore::OptionNumber$new(
+                "complecity",
+                complecity)
+            private$..maxComplete <- jmvcore::OptionNumber$new(
+                "maxComplete",
+                maxComplete)
+            private$..maxSurrogate <- jmvcore::OptionNumber$new(
+                "maxSurrogate",
+                maxSurrogate)
+            private$..unsurrogate <- jmvcore::OptionNumber$new(
+                "unsurrogate",
+                unsurrogate)
+            private$..noCrossValidations <- jmvcore::OptionNumber$new(
+                "noCrossValidations",
+                noCrossValidations)
+            private$..maxDepth <- jmvcore::OptionNumber$new(
+                "maxDepth",
+                maxDepth)
+            private$..plotDecisionTree <- jmvcore::OptionBool$new(
+                "plotDecisionTree",
+                plotDecisionTree,
+                default=FALSE)
 
             self$.addOption(private$..dep)
             self$.addOption(private$..indep)
@@ -60,6 +97,15 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             self$.addOption(private$..testing)
             self$.addOption(private$..reporting)
             self$.addOption(private$..classifier)
+            self$.addOption(private$..minSplit)
+            self$.addOption(private$..minBucket)
+            self$.addOption(private$..complecity)
+            self$.addOption(private$..maxComplete)
+            self$.addOption(private$..maxSurrogate)
+            self$.addOption(private$..unsurrogate)
+            self$.addOption(private$..noCrossValidations)
+            self$.addOption(private$..maxDepth)
+            self$.addOption(private$..plotDecisionTree)
         }),
     active = list(
         dep = function() private$..dep$value,
@@ -68,7 +114,16 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         noOfFolds = function() private$..noOfFolds$value,
         testing = function() private$..testing$value,
         reporting = function() private$..reporting$value,
-        classifier = function() private$..classifier$value),
+        classifier = function() private$..classifier$value,
+        minSplit = function() private$..minSplit$value,
+        minBucket = function() private$..minBucket$value,
+        complecity = function() private$..complecity$value,
+        maxComplete = function() private$..maxComplete$value,
+        maxSurrogate = function() private$..maxSurrogate$value,
+        unsurrogate = function() private$..unsurrogate$value,
+        noCrossValidations = function() private$..noCrossValidations$value,
+        maxDepth = function() private$..maxDepth$value,
+        plotDecisionTree = function() private$..plotDecisionTree$value),
     private = list(
         ..dep = NA,
         ..indep = NA,
@@ -76,7 +131,16 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         ..noOfFolds = NA,
         ..testing = NA,
         ..reporting = NA,
-        ..classifier = NA)
+        ..classifier = NA,
+        ..minSplit = NA,
+        ..minBucket = NA,
+        ..complecity = NA,
+        ..maxComplete = NA,
+        ..maxSurrogate = NA,
+        ..unsurrogate = NA,
+        ..noCrossValidations = NA,
+        ..maxDepth = NA,
+        ..plotDecisionTree = NA)
 )
 
 classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
@@ -125,6 +189,15 @@ classificationBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' @param testing .
 #' @param reporting .
 #' @param classifier .
+#' @param minSplit .
+#' @param minBucket .
+#' @param complecity .
+#' @param maxComplete .
+#' @param maxSurrogate .
+#' @param unsurrogate .
+#' @param noCrossValidations .
+#' @param maxDepth .
+#' @param plotDecisionTree .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$text} \tab \tab \tab \tab \tab a preformatted \cr
@@ -139,7 +212,16 @@ classification <- function(
     noOfFolds,
     testing,
     reporting,
-    classifier) {
+    classifier,
+    minSplit,
+    minBucket,
+    complecity,
+    maxComplete,
+    maxSurrogate,
+    unsurrogate,
+    noCrossValidations,
+    maxDepth,
+    plotDecisionTree = FALSE) {
 
     if ( ! requireNamespace('jmvcore'))
         stop('classification requires jmvcore to be installed (restart may be required)')
@@ -160,7 +242,16 @@ classification <- function(
         noOfFolds = noOfFolds,
         testing = testing,
         reporting = reporting,
-        classifier = classifier)
+        classifier = classifier,
+        minSplit = minSplit,
+        minBucket = minBucket,
+        complecity = complecity,
+        maxComplete = maxComplete,
+        maxSurrogate = maxSurrogate,
+        unsurrogate = unsurrogate,
+        noCrossValidations = noCrossValidations,
+        maxDepth = maxDepth,
+        plotDecisionTree = plotDecisionTree)
 
     analysis <- classificationClass$new(
         options = options,

@@ -51,7 +51,6 @@ children:
                   - type: TextBox
                     name: noOfFolds
                     format: number
-
       - type: Label
         label: Reporting
         children:
@@ -78,4 +77,49 @@ children:
             type: RadioButton
             optionName: classifier
             optionPart: randomForest
+  - type: CollapseBox
+    label: Single decision tree
+    collapsed: true
+    stretchFactor: 1
+    children:
+      - type: LayoutBox
+        style: inline
+        children:
+          - type: LayoutBox
+            style: list
+            margin: large
+            children:
+              - type: TextBox
+                name: minSplit
+                format: number
+              - type: TextBox
+                name: minBucket
+                format: number
+              - type: TextBox
+                name: complecity
+                format: number
+              - type: TextBox
+                name: maxComplete
+                format: number
+          - type: LayoutBox
+            margin: large
+            style: list
+            children:
+              - type: TextBox
+                name: maxSurrogate
+                format: number
+              - type: TextBox
+                name: unsurrogate
+                format: number
+              - type: TextBox
+                name: noCrossValidations
+                format: number
+              - type: TextBox
+                name: maxDepth
+                format: number
+      - type: LayoutBox
+        margin: large
+        children:
+          - type: CheckBox
+            name: plotDecisionTree
 

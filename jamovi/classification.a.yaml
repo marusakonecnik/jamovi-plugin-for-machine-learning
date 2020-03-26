@@ -55,4 +55,42 @@ options:
           title: Simple Decision Tree
         - name: randomForest
           title: random forest
+
+    - name: minSplit
+      title: Min. split
+      type: Number
+
+    - name: minBucket
+      title: Min. bucket
+      type: Number
+
+    - name: complecity
+      title: Complecity
+      type: Number
+
+    - name: maxComplete
+      title: Max. complete
+      type: Number
+
+    - name: maxSurrogate
+      title: Max. surrogate
+      type: Number
+
+    - name: unsurrogate
+      title: Unsorrogate
+      type: Number
+
+    - name: noCrossValidations
+      title: No. cross-validations
+      type: Number
+
+    - name: maxDepth
+      title: Max depth
+      type: Number
+
+    - name: plotDecisionTree
+      title: Plot decision tree
+      type: Bool
+      default: false
+
 ...

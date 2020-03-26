@@ -3,7 +3,7 @@
 
 'use strict';
 
-const options = [{"name":"data","type":"Data"},{"name":"dep","title":"Dependent Variable","type":"Variable"},{"name":"indep","title":"Independent Variables","type":"Variables"},{"name":"testSize","title":"Testing","type":"Number"},{"name":"noOfFolds","title":"No. of folds","type":"Number"},{"name":"testing","title":"Testing","type":"List","options":[{"name":"trainSet","title":"Train set"},{"name":"split","title":"Train/test split"},{"name":"crossValidation","title":"Cross-validation"}]},{"name":"reporting","type":"NMXList","title":"Reporting","options":[{"name":"classificationMatrix","title":"classification Matrix"},{"name":"confusionMatrix","title":"confusion Matrix"},{"name":"AUC","title":"AUC"}]},{"name":"classifier","title":"Classifier","type":"List","options":[{"name":"simpleDecisionTree","title":"Simple Decision Tree"},{"name":"randomForest","title":"random forest"}]}];
+const options = [{"name":"data","type":"Data"},{"name":"dep","title":"Dependent Variable","type":"Variable"},{"name":"indep","title":"Independent Variables","type":"Variables"},{"name":"testSize","title":"Testing","type":"Number"},{"name":"noOfFolds","title":"No. of folds","type":"Number"},{"name":"testing","title":"Testing","type":"List","options":[{"name":"trainSet","title":"Train set"},{"name":"split","title":"Train/test split"},{"name":"crossValidation","title":"Cross-validation"}]},{"name":"reporting","type":"NMXList","title":"Reporting","options":[{"name":"classificationMatrix","title":"classification Matrix"},{"name":"confusionMatrix","title":"confusion Matrix"},{"name":"AUC","title":"AUC"}]},{"name":"classifier","title":"Classifier","type":"List","options":[{"name":"simpleDecisionTree","title":"Simple Decision Tree"},{"name":"randomForest","title":"random forest"}]},{"name":"minSplit","title":"Min. split","type":"Number"},{"name":"minBucket","title":"Min. bucket","type":"Number"},{"name":"complecity","title":"Complecity","type":"Number"},{"name":"maxComplete","title":"Max. complete","type":"Number"},{"name":"maxSurrogate","title":"Max. surrogate","type":"Number"},{"name":"unsurrogate","title":"Unsorrogate","type":"Number"},{"name":"noCrossValidations","title":"No. cross-validations","type":"Number"},{"name":"maxDepth","title":"Max depth","type":"Number"},{"name":"plotDecisionTree","title":"Plot decision tree","type":"Bool","default":false}];
 
 const view = function() {
     
@@ -164,6 +164,98 @@ view.layout = ui.extend({
 							typeName: 'RadioButton',
 							optionName: "classifier",
 							optionPart: "randomForest"
+						}
+					]
+				}
+			]
+		},
+		{
+			type: DefaultControls.CollapseBox,
+			typeName: 'CollapseBox',
+			label: "Single decision tree",
+			collapsed: true,
+			stretchFactor: 1,
+			controls: [
+				{
+					type: DefaultControls.LayoutBox,
+					typeName: 'LayoutBox',
+					style: "inline",
+					controls: [
+						{
+							type: DefaultControls.LayoutBox,
+							typeName: 'LayoutBox',
+							style: "list",
+							margin: "large",
+							controls: [
+								{
+									type: DefaultControls.TextBox,
+									typeName: 'TextBox',
+									name: "minSplit",
+									format: FormatDef.number
+								},
+								{
+									type: DefaultControls.TextBox,
+									typeName: 'TextBox',
+									name: "minBucket",
+									format: FormatDef.number
+								},
+								{
+									type: DefaultControls.TextBox,
+									typeName: 'TextBox',
+									name: "complecity",
+									format: FormatDef.number
+								},
+								{
+									type: DefaultControls.TextBox,
+									typeName: 'TextBox',
+									name: "maxComplete",
+									format: FormatDef.number
+								}
+							]
+						},
+						{
+							type: DefaultControls.LayoutBox,
+							typeName: 'LayoutBox',
+							margin: "large",
+							style: "list",
+							controls: [
+								{
+									type: DefaultControls.TextBox,
+									typeName: 'TextBox',
+									name: "maxSurrogate",
+									format: FormatDef.number
+								},
+								{
+									type: DefaultControls.TextBox,
+									typeName: 'TextBox',
+									name: "unsurrogate",
+									format: FormatDef.number
+								},
+								{
+									type: DefaultControls.TextBox,
+									typeName: 'TextBox',
+									name: "noCrossValidations",
+									format: FormatDef.number
+								},
+								{
+									type: DefaultControls.TextBox,
+									typeName: 'TextBox',
+									name: "maxDepth",
+									format: FormatDef.number
+								}
+							]
+						}
+					]
+				},
+				{
+					type: DefaultControls.LayoutBox,
+					typeName: 'LayoutBox',
+					margin: "large",
+					controls: [
+						{
+							type: DefaultControls.CheckBox,
+							typeName: 'CheckBox',
+							name: "plotDecisionTree"
 						}
 					]
 				}
