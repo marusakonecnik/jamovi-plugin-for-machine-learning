@@ -54,10 +54,6 @@ children:
       - type: Label
         label: Reporting
         children:
-          - name: reporting_classificationMatrix
-            type: CheckBox
-            optionName: reporting
-            optionPart: classificationMatrix
           - name: reporting_confusionMatrix
             type: CheckBox
             optionName: reporting
@@ -66,17 +62,21 @@ children:
             type: CheckBox
             optionName: reporting
             optionPart: AUC
-      - type: Label
-        label: Classifier
-        children:
-          - name: classifier_singleDecisionTree
-            type: RadioButton
-            optionName: classifier
-            optionPart: simpleDecisionTree
-          - name: classifier_randomForest
-            type: RadioButton
-            optionName: classifier
-            optionPart: randomForest
+          - name: reporting_classifMetrices
+            type: CheckBox
+            optionName: reporting
+            optionPart: classifMetrices
+  - type: Label
+    label: Classifier
+    children:
+      - name: classifier_singleDecisionTree
+        type: RadioButton
+        optionName: classifier
+        optionPart: simpleDecisionTree
+      - name: classifier_randomForest
+        type: RadioButton
+        optionName: classifier
+        optionPart: randomForest
   - type: CollapseBox
     label: Single decision tree
     collapsed: true
@@ -99,7 +99,7 @@ children:
                 name: complecity
                 format: number
               - type: TextBox
-                name: maxComplete
+                name: maxCompete
                 format: number
           - type: LayoutBox
             margin: large
@@ -122,4 +122,3 @@ children:
         children:
           - type: CheckBox
             name: plotDecisionTree
-

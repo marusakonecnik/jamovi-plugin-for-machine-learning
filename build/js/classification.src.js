@@ -3,7 +3,7 @@
 
 'use strict';
 
-const options = [{"name":"data","type":"Data"},{"name":"dep","title":"Dependent Variable","type":"Variable"},{"name":"indep","title":"Independent Variables","type":"Variables"},{"name":"testSize","title":"Testing","type":"Number"},{"name":"noOfFolds","title":"No. of folds","type":"Number"},{"name":"testing","title":"Testing","type":"List","options":[{"name":"trainSet","title":"Train set"},{"name":"split","title":"Train/test split"},{"name":"crossValidation","title":"Cross-validation"}]},{"name":"reporting","type":"NMXList","title":"Reporting","options":[{"name":"classificationMatrix","title":"classification Matrix"},{"name":"confusionMatrix","title":"confusion Matrix"},{"name":"AUC","title":"AUC"}]},{"name":"classifier","title":"Classifier","type":"List","options":[{"name":"simpleDecisionTree","title":"Simple Decision Tree"},{"name":"randomForest","title":"random forest"}]},{"name":"minSplit","title":"Min. split","type":"Number"},{"name":"minBucket","title":"Min. bucket","type":"Number"},{"name":"complecity","title":"Complecity","type":"Number"},{"name":"maxComplete","title":"Max. complete","type":"Number"},{"name":"maxSurrogate","title":"Max. surrogate","type":"Number"},{"name":"unsurrogate","title":"Unsorrogate","type":"Number"},{"name":"noCrossValidations","title":"No. cross-validations","type":"Number"},{"name":"maxDepth","title":"Max depth","type":"Number"},{"name":"plotDecisionTree","title":"Plot decision tree","type":"Bool","default":false}];
+const options = [{"name":"data","type":"Data"},{"name":"dep","title":"Dependent Variable","type":"Variable"},{"name":"indep","title":"Independent Variables","type":"Variables"},{"name":"testSize","title":"Testing","type":"Number","default":0.33},{"name":"noOfFolds","title":"No. of folds","type":"Number","default":10},{"name":"testing","title":"Testing","type":"List","options":[{"name":"trainSet","title":"Train set"},{"name":"split","title":"Train/test split"},{"name":"crossValidation","title":"Cross-validation"}]},{"name":"reporting","type":"NMXList","title":"Reporting","options":[{"name":"classifMetrices","title":"Classification metrices"},{"name":"confusionMatrix","title":"Confusion Matrix"},{"name":"AUC","title":"AUC"}]},{"name":"classifier","title":"Classifier","type":"List","options":[{"name":"simpleDecisionTree","title":"Simple Decision Tree"},{"name":"randomForest","title":"Random forest"}]},{"name":"minSplit","title":"Min. split","type":"Number","default":20},{"name":"minBucket","title":"Min. bucket","type":"Number","default":0},{"name":"complecity","title":"Complecity","type":"Number","default":0.01},{"name":"maxCompete","title":"Max. compete","type":"Number","default":4},{"name":"maxSurrogate","title":"Max. surrogate","type":"Number","default":5},{"name":"unsurrogate","title":"Unsorrogate","type":"Number","default":2},{"name":"noCrossValidations","title":"No. cross-validations","type":"Number","default":10},{"name":"maxDepth","title":"Max depth","type":"Number","default":30},{"name":"plotDecisionTree","title":"Plot decision tree","type":"Bool","default":false}];
 
 const view = function() {
     
@@ -124,13 +124,6 @@ view.layout = ui.extend({
 					label: "Reporting",
 					controls: [
 						{
-							name: "reporting_classificationMatrix",
-							type: DefaultControls.CheckBox,
-							typeName: 'CheckBox',
-							optionName: "reporting",
-							optionPart: "classificationMatrix"
-						},
-						{
 							name: "reporting_confusionMatrix",
 							type: DefaultControls.CheckBox,
 							typeName: 'CheckBox',
@@ -143,29 +136,36 @@ view.layout = ui.extend({
 							typeName: 'CheckBox',
 							optionName: "reporting",
 							optionPart: "AUC"
-						}
-					]
-				},
-				{
-					type: DefaultControls.Label,
-					typeName: 'Label',
-					label: "Classifier",
-					controls: [
-						{
-							name: "classifier_singleDecisionTree",
-							type: DefaultControls.RadioButton,
-							typeName: 'RadioButton',
-							optionName: "classifier",
-							optionPart: "simpleDecisionTree"
 						},
 						{
-							name: "classifier_randomForest",
-							type: DefaultControls.RadioButton,
-							typeName: 'RadioButton',
-							optionName: "classifier",
-							optionPart: "randomForest"
+							name: "reporting_classifMetrices",
+							type: DefaultControls.CheckBox,
+							typeName: 'CheckBox',
+							optionName: "reporting",
+							optionPart: "classifMetrices"
 						}
 					]
+				}
+			]
+		},
+		{
+			type: DefaultControls.Label,
+			typeName: 'Label',
+			label: "Classifier",
+			controls: [
+				{
+					name: "classifier_singleDecisionTree",
+					type: DefaultControls.RadioButton,
+					typeName: 'RadioButton',
+					optionName: "classifier",
+					optionPart: "simpleDecisionTree"
+				},
+				{
+					name: "classifier_randomForest",
+					type: DefaultControls.RadioButton,
+					typeName: 'RadioButton',
+					optionName: "classifier",
+					optionPart: "randomForest"
 				}
 			]
 		},
@@ -208,7 +208,7 @@ view.layout = ui.extend({
 								{
 									type: DefaultControls.TextBox,
 									typeName: 'TextBox',
-									name: "maxComplete",
+									name: "maxCompete",
 									format: FormatDef.number
 								}
 							]

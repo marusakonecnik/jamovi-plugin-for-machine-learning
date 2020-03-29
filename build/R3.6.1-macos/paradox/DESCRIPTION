@@ -1,0 +1,57 @@
+Type: Package
+Package: paradox
+Title: Define and Work with Parameter Spaces for Complex Algorithms
+Version: 0.1.0
+Authors@R: 
+    c(person(given = "Michel",
+             family = "Lang",
+             role = c("cre", "aut"),
+             email = "michellang@gmail.com",
+             comment = c(ORCID = "0000-0001-9754-0393")),
+      person(given = "Bernd",
+             family = "Bischl",
+             role = "aut",
+             email = "bernd_bischl@gmx.net",
+             comment = c(ORCID = "0000-0001-6002-6980")),
+      person(given = "Jakob",
+             family = "Richter",
+             role = "aut",
+             email = "jakob1richter@gmail.com",
+             comment = c(ORCID = "0000-0003-4481-5554")),
+      person(given = "Xudong",
+             family = "Sun",
+             role = "aut",
+             email = "smilesun.east@gmail.com",
+             comment = c(ORCID = "0000-0003-3269-2307")),
+      person(given = "Martin",
+             family = "Binder",
+             role = "aut",
+             email = "mlr.developer@mb706.com"))
+Description: Define parameter spaces, constraints and
+    dependencies for arbitrary algorithms, to program on such spaces. Also
+    includes statistical designs and random samplers. Objects are implemented
+    as 'R6' classes.
+License: LGPL-3
+URL: https://paradox.mlr-org.com
+BugReports: https://github.com/mlr-org/paradox/issues
+Imports: backports, checkmate, data.table, mlr3misc, R6
+Suggests: lhs, testthat
+Encoding: UTF-8
+NeedsCompilation: no
+RoxygenNote: 6.1.1
+Collate: 'Condition.R' 'Design.R' 'NoDefault.R' 'Param.R' 'ParamDbl.R'
+        'ParamFct.R' 'ParamInt.R' 'ParamLgl.R' 'ParamSet.R'
+        'ParamSetCollection.R' 'ParamUty.R' 'Sampler.R' 'Sampler1D.R'
+        'SamplerHierarchical.R' 'SamplerJointIndep.R' 'SamplerUnif.R'
+        'asserts.R' 'generate_design_grid.R' 'generate_design_lhs.R'
+        'generate_design_random.R' 'zzz.R'
+Packaged: 2019-07-10 15:32:49 UTC; michel
+Author: Michel Lang [cre, aut] (<https://orcid.org/0000-0001-9754-0393>),
+  Bernd Bischl [aut] (<https://orcid.org/0000-0001-6002-6980>),
+  Jakob Richter [aut] (<https://orcid.org/0000-0003-4481-5554>),
+  Xudong Sun [aut] (<https://orcid.org/0000-0003-3269-2307>),
+  Martin Binder [aut]
+Maintainer: Michel Lang <michellang@gmail.com>
+Repository: CRAN
+Date/Publication: 2019-07-12 14:50:02 UTC
+Built: R 3.6.0; ; 2019-07-13 19:24:26 UTC; unix

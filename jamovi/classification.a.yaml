@@ -20,10 +20,12 @@ options:
     - name: testSize
       title:  Testing
       type: Number
+      default: 0.33
 
     - name: noOfFolds
       title:  No. of folds
       type: Number
+      default: 10
 
     - name: testing
       title: Testing
@@ -40,10 +42,10 @@ options:
       type: NMXList
       title: Reporting
       options:
-        - name: classificationMatrix
-          title: classification Matrix
+        - name: classifMetrices
+          title: Classification metrices
         - name: confusionMatrix
-          title: confusion Matrix
+          title: Confusion Matrix
         - name: AUC
           title: AUC
 
@@ -54,39 +56,47 @@ options:
         - name: simpleDecisionTree
           title: Simple Decision Tree
         - name: randomForest
-          title: random forest
+          title: Random forest
 
     - name: minSplit
       title: Min. split
       type: Number
+      default: 20
 
     - name: minBucket
       title: Min. bucket
       type: Number
+      default: 0
 
     - name: complecity
       title: Complecity
       type: Number
+      default: 0.01
 
-    - name: maxComplete
-      title: Max. complete
+    - name: maxCompete
+      title: Max. compete
       type: Number
+      default: 4
 
     - name: maxSurrogate
       title: Max. surrogate
       type: Number
+      default: 5
 
     - name: unsurrogate
       title: Unsorrogate
       type: Number
+      default: 2
 
     - name: noCrossValidations
       title: No. cross-validations
       type: Number
+      default: 10
 
     - name: maxDepth
       title: Max depth
       type: Number
+      default: 30
 
     - name: plotDecisionTree
       title: Plot decision tree

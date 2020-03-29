@@ -1,1 +1,4 @@
 exportPattern("^[[:alpha:]]+")
+import(mlr3)
+import(ggplot2)
+S3method(autoplot,PredictionClassif)

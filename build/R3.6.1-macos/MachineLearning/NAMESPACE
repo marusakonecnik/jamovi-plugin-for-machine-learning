@@ -1,7 +1,0 @@
-exportPattern("^[[:alpha:]]+")
-
-export(classificationClass)
-export(classificationOptions)
-
-export(experimenterClass)
-export(experimenterOptions)

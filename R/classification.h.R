@@ -8,19 +8,19 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         initialize = function(
             dep = NULL,
             indep = NULL,
-            testSize = NULL,
-            noOfFolds = NULL,
+            testSize = 0.33,
+            noOfFolds = 10,
             testing = NULL,
             reporting = NULL,
             classifier = NULL,
-            minSplit = NULL,
-            minBucket = NULL,
-            complecity = NULL,
-            maxComplete = NULL,
-            maxSurrogate = NULL,
-            unsurrogate = NULL,
-            noCrossValidations = NULL,
-            maxDepth = NULL,
+            minSplit = 20,
+            minBucket = 0,
+            complecity = 0.01,
+            maxCompete = 4,
+            maxSurrogate = 5,
+            unsurrogate = 2,
+            noCrossValidations = 10,
+            maxDepth = 30,
             plotDecisionTree = FALSE, ...) {
 
             super$initialize(
@@ -37,10 +37,12 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
                 indep)
             private$..testSize <- jmvcore::OptionNumber$new(
                 "testSize",
-                testSize)
+                testSize,
+                default=0.33)
             private$..noOfFolds <- jmvcore::OptionNumber$new(
                 "noOfFolds",
-                noOfFolds)
+                noOfFolds,
+                default=10)
             private$..testing <- jmvcore::OptionList$new(
                 "testing",
                 testing,
@@ -52,7 +54,7 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
                 "reporting",
                 reporting,
                 options=list(
-                    "classificationMatrix",
+                    "classifMetrices",
                     "confusionMatrix",
                     "AUC"))
             private$..classifier <- jmvcore::OptionList$new(
@@ -63,28 +65,36 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
                     "randomForest"))
             private$..minSplit <- jmvcore::OptionNumber$new(
                 "minSplit",
-                minSplit)
+                minSplit,
+                default=20)
             private$..minBucket <- jmvcore::OptionNumber$new(
                 "minBucket",
-                minBucket)
+                minBucket,
+                default=0)
             private$..complecity <- jmvcore::OptionNumber$new(
                 "complecity",
-                complecity)
-            private$..maxComplete <- jmvcore::OptionNumber$new(
-                "maxComplete",
-                maxComplete)
+                complecity,
+                default=0.01)
+            private$..maxCompete <- jmvcore::OptionNumber$new(
+                "maxCompete",
+                maxCompete,
+                default=4)
             private$..maxSurrogate <- jmvcore::OptionNumber$new(
                 "maxSurrogate",
-                maxSurrogate)
+                maxSurrogate,
+                default=5)
             private$..unsurrogate <- jmvcore::OptionNumber$new(
                 "unsurrogate",
-                unsurrogate)
+                unsurrogate,
+                default=2)
             private$..noCrossValidations <- jmvcore::OptionNumber$new(
                 "noCrossValidations",
-                noCrossValidations)
+                noCrossValidations,
+                default=10)
             private$..maxDepth <- jmvcore::OptionNumber$new(
                 "maxDepth",
-                maxDepth)
+                maxDepth,
+                default=30)
             private$..plotDecisionTree <- jmvcore::OptionBool$new(
                 "plotDecisionTree",
                 plotDecisionTree,
@@ -100,7 +110,7 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             self$.addOption(private$..minSplit)
             self$.addOption(private$..minBucket)
             self$.addOption(private$..complecity)
-            self$.addOption(private$..maxComplete)
+            self$.addOption(private$..maxCompete)
             self$.addOption(private$..maxSurrogate)
             self$.addOption(private$..unsurrogate)
             self$.addOption(private$..noCrossValidations)
@@ -118,7 +128,7 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         minSplit = function() private$..minSplit$value,
         minBucket = function() private$..minBucket$value,
         complecity = function() private$..complecity$value,
-        maxComplete = function() private$..maxComplete$value,
+        maxCompete = function() private$..maxCompete$value,
         maxSurrogate = function() private$..maxSurrogate$value,
         unsurrogate = function() private$..unsurrogate$value,
         noCrossValidations = function() private$..noCrossValidations$value,
@@ -135,7 +145,7 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         ..minSplit = NA,
         ..minBucket = NA,
         ..complecity = NA,
-        ..maxComplete = NA,
+        ..maxCompete = NA,
         ..maxSurrogate = NA,
         ..unsurrogate = NA,
         ..noCrossValidations = NA,
@@ -146,18 +156,93 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
 classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
     inherit = jmvcore::Group,
     active = list(
-        text = function() private$.items[["text"]]),
+        confusionMatrix = function() private$.items[["confusionMatrix"]],
+        classifMetrices = function() private$.items[["classifMetrices"]],
+        classMeasures = function() private$.items[["classMeasures"]],
+        AUC = function() private$.items[["AUC"]],
+        decisionTreePlot = function() private$.items[["decisionTreePlot"]]),
     private = list(),
     public=list(
         initialize=function(options) {
             super$initialize(
                 options=options,
                 name="",
-                title="Classification")
-            self$add(jmvcore::Preformatted$new(
+                title="Decision tree")
+            self$add(jmvcore::Table$new(
                 options=options,
-                name="text",
-                title="Classification"))}))
+                name="confusionMatrix",
+                title="Confusion matrix",
+                visible=FALSE,
+                rows=0,
+                columns=list(
+                    list(
+                        `name`="class", 
+                        `title`="response", 
+                        `type`="number"))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="classifMetrices",
+                title="Classification metrices",
+                visible=FALSE,
+                rows=0,
+                columns=list(
+                    list(
+                        `name`="class", 
+                        `title`="class name", 
+                        `type`="text"),
+                    list(
+                        `name`="prec", 
+                        `title`="precision", 
+                        `type`="number"),
+                    list(
+                        `name`="rec", 
+                        `title`="recall", 
+                        `type`="number"),
+                    list(
+                        `name`="fscore", 
+                        `title`="f-score", 
+                        `type`="number"))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="classMeasures",
+                visible=FALSE,
+                title="",
+                rows=1,
+                columns=list(
+                    list(
+                        `name`="acc", 
+                        `title`="Accuracy", 
+                        `type`="number"),
+                    list(
+                        `name`="bacc", 
+                        `title`="Balanced accuracy", 
+                        `type`="number"),
+                    list(
+                        `name`="ce", 
+                        `title`="Class. error", 
+                        `type`="number"),
+                    list(
+                        `name`="logloss", 
+                        `title`="Log loss", 
+                        `type`="number"))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="AUC",
+                visible=FALSE,
+                title="AUC",
+                rows=1,
+                columns=list(
+                    list(
+                        `name`="acc", 
+                        `title`="Accuracy", 
+                        `type`="number"))))
+            self$add(jmvcore::Image$new(
+                options=options,
+                name="decisionTreePlot",
+                title="Decision tree plot",
+                width=400,
+                height=300,
+                renderFun=".plot"))}))
 
 classificationBase <- if (requireNamespace('jmvcore')) R6::R6Class(
     "classificationBase",
@@ -192,7 +277,7 @@ classificationBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' @param minSplit .
 #' @param minBucket .
 #' @param complecity .
-#' @param maxComplete .
+#' @param maxCompete .
 #' @param maxSurrogate .
 #' @param unsurrogate .
 #' @param noCrossValidations .
@@ -200,27 +285,37 @@ classificationBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' @param plotDecisionTree .
 #' @return A results object containing:
 #' \tabular{llllll}{
-#'   \code{results$text} \tab \tab \tab \tab \tab a preformatted \cr
+#'   \code{results$confusionMatrix} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$classifMetrices} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$classMeasures} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$AUC} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$decisionTreePlot} \tab \tab \tab \tab \tab an image \cr
 #' }
+#'
+#' Tables can be converted to data frames with \code{asDF} or \code{\link{as.data.frame}}. For example:
+#'
+#' \code{results$confusionMatrix$asDF}
+#'
+#' \code{as.data.frame(results$confusionMatrix)}
 #'
 #' @export
 classification <- function(
     data,
     dep,
     indep,
-    testSize,
-    noOfFolds,
+    testSize = 0.33,
+    noOfFolds = 10,
     testing,
     reporting,
     classifier,
-    minSplit,
-    minBucket,
-    complecity,
-    maxComplete,
-    maxSurrogate,
-    unsurrogate,
-    noCrossValidations,
-    maxDepth,
+    minSplit = 20,
+    minBucket = 0,
+    complecity = 0.01,
+    maxCompete = 4,
+    maxSurrogate = 5,
+    unsurrogate = 2,
+    noCrossValidations = 10,
+    maxDepth = 30,
     plotDecisionTree = FALSE) {
 
     if ( ! requireNamespace('jmvcore'))
@@ -246,7 +341,7 @@ classification <- function(
         minSplit = minSplit,
         minBucket = minBucket,
         complecity = complecity,
-        maxComplete = maxComplete,
+        maxCompete = maxCompete,
         maxSurrogate = maxSurrogate,
         unsurrogate = unsurrogate,
         noCrossValidations = noCrossValidations,

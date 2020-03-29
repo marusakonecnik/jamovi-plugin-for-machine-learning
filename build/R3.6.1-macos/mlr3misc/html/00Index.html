@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>R: Helper Functions for 'mlr3'</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body>
+<h1> Helper Functions for 'mlr3'
+<img class="toplogo" src="../../../doc/html/Rlogo.svg" alt="[R logo]" />
+</h1>
+<hr/>
+<div style="text-align: center;">
+<a href="../../../doc/html/packages.html"><img class="arrow" src="../../../doc/html/left.jpg" alt="[Up]" /></a>
+<a href="../../../doc/html/index.html"><img class="arrow" src="../../../doc/html/up.jpg" alt="[Top]" /></a>
+</div><h2>Documentation for package &lsquo;mlr3misc&rsquo; version 0.1.6</h2>
+
+<ul><li><a href="../DESCRIPTION">DESCRIPTION file</a>.</li>
+</ul>
+
+<h2>Help Pages</h2>
+
+
+<table width="100%">
+<tr><td style="width: 25%;"><a href="mlr3misc-package.html">mlr3misc-package</a></td>
+<td>mlr3misc: Helper Functions for 'mlr3'</td></tr>
+<tr><td style="width: 25%;"><a href="nin.html">%nin%</a></td>
+<td>Negated in-operator</td></tr>
+<tr><td style="width: 25%;"><a href="as_factor.html">as_factor</a></td>
+<td>Convert to Factor</td></tr>
+<tr><td style="width: 25%;"><a href="as_short_string.html">as_short_string</a></td>
+<td>Convert R Object to a Descriptive String</td></tr>
+<tr><td style="width: 25%;"><a href="printf.html">catf</a></td>
+<td>Functions for Formatted Output and Conditions</td></tr>
+<tr><td style="width: 25%;"><a href="chunk_vector.html">chunk</a></td>
+<td>Chunk Vectors</td></tr>
+<tr><td style="width: 25%;"><a href="chunk_vector.html">chunk_vector</a></td>
+<td>Chunk Vectors</td></tr>
+<tr><td style="width: 25%;"><a href="cite_bib.html">cite_bib</a></td>
+<td>Cite using a Bibtex File</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">compat-map</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compute_mode.html">compute_mode</a></td>
+<td>Compute The Mode</td></tr>
+<tr><td style="width: 25%;"><a href="cross_join.html">cross_join</a></td>
+<td>Cross-Join for data.table</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">detect</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="Dictionary.html">Dictionary</a></td>
+<td>Key-Value Storage</td></tr>
+<tr><td style="width: 25%;"><a href="dictionary_sugar_get.html">dictionary_sugar</a></td>
+<td>A Quick Way to Initialize Objects from Dictionaries</td></tr>
+<tr><td style="width: 25%;"><a href="dictionary_sugar_get.html">dictionary_sugar_get</a></td>
+<td>A Quick Way to Initialize Objects from Dictionaries</td></tr>
+<tr><td style="width: 25%;"><a href="dictionary_sugar_get.html">dictionary_sugar_mget</a></td>
+<td>A Quick Way to Initialize Objects from Dictionaries</td></tr>
+<tr><td style="width: 25%;"><a href="did_you_mean.html">did_you_mean</a></td>
+<td>Suggest Alternatives</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">discard</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="distinct_values.html">distinct_values</a></td>
+<td>Get Distinct Values</td></tr>
+<tr><td style="width: 25%;"><a href="encapsulate.html">encapsulate</a></td>
+<td>Encapsulate Function Calls for Logging</td></tr>
+<tr><td style="width: 25%;"><a href="enframe.html">enframe</a></td>
+<td>Convert a Named Vector Into A data.table</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">every</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="extract_vars.html">extract_vars</a></td>
+<td>Extract Variables from a Formula</td></tr>
+<tr><td style="width: 25%;"><a href="formulate.html">formulate</a></td>
+<td>Create Formulas</td></tr>
+<tr><td style="width: 25%;"><a href="get_seed.html">get_seed</a></td>
+<td>Get the Random Seed</td></tr>
+<tr><td style="width: 25%;"><a href="has_element.html">has_element</a></td>
+<td>Check if an Object is Element of a List</td></tr>
+<tr><td style="width: 25%;"><a href="ids.html">ids</a></td>
+<td>Extract ids from a List of Objects</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">imap</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">imap_chr</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">imap_dbl</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">imap_dtc</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">imap_dtr</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">imap_int</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">imap_lgl</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="insert_named.html">insert_named</a></td>
+<td>Insert or Remove Named Elements</td></tr>
+<tr><td style="width: 25%;"><a href="insert_named.html">insert_named.data.frame</a></td>
+<td>Insert or Remove Named Elements</td></tr>
+<tr><td style="width: 25%;"><a href="insert_named.html">insert_named.data.table</a></td>
+<td>Insert or Remove Named Elements</td></tr>
+<tr><td style="width: 25%;"><a href="insert_named.html">insert_named.default</a></td>
+<td>Insert or Remove Named Elements</td></tr>
+<tr><td style="width: 25%;"><a href="insert_named.html">insert_named.environment</a></td>
+<td>Insert or Remove Named Elements</td></tr>
+<tr><td style="width: 25%;"><a href="invoke.html">invoke</a></td>
+<td>Invoke a Function Call</td></tr>
+<tr><td style="width: 25%;"><a href="is_scalar_na.html">is_scalar_na</a></td>
+<td>Check for a Single Scalar Value</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">keep</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="keep_in_bounds.html">keep_in_bounds</a></td>
+<td>Remove All Elements Out Of Bounds</td></tr>
+<tr><td style="width: 25%;"><a href="load_dataset.html">load_dataset</a></td>
+<td>Retrieve a Single Data Set</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">map</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">map_at</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">map_chr</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">map_dbl</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">map_dtc</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">map_dtr</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">map_if</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">map_int</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">map_lgl</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="map_values.html">map_values</a></td>
+<td>Replace Elements of Vectors with New Values</td></tr>
+<tr><td style="width: 25%;"><a href="printf.html">messagef</a></td>
+<td>Functions for Formatted Output and Conditions</td></tr>
+<tr><td style="width: 25%;"><a href="mlr3misc-package.html">mlr3misc</a></td>
+<td>mlr3misc: Helper Functions for 'mlr3'</td></tr>
+<tr><td style="width: 25%;"><a href="modify_if.html">modify_at</a></td>
+<td>Selectively Modify Elements of a Vector</td></tr>
+<tr><td style="width: 25%;"><a href="modify_if.html">modify_if</a></td>
+<td>Selectively Modify Elements of a Vector</td></tr>
+<tr><td style="width: 25%;"><a href="named_list.html">named_list</a></td>
+<td>Create a Named List</td></tr>
+<tr><td style="width: 25%;"><a href="named_vector.html">named_vector</a></td>
+<td>Create a Named Vector</td></tr>
+<tr><td style="width: 25%;"><a href="names2.html">names2</a></td>
+<td>A Type-Stable names() Replacement</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">pmap</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">pmap_chr</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">pmap_dbl</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">pmap_dtc</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">pmap_dtr</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">pmap_int</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">pmap_lgl</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="printf.html">printf</a></td>
+<td>Functions for Formatted Output and Conditions</td></tr>
+<tr><td style="width: 25%;"><a href="rcbind.html">rcbind</a></td>
+<td>Bind Columns by Reference</td></tr>
+<tr><td style="width: 25%;"><a href="insert_named.html">remove_named</a></td>
+<td>Insert or Remove Named Elements</td></tr>
+<tr><td style="width: 25%;"><a href="insert_named.html">remove_named.data.frame</a></td>
+<td>Insert or Remove Named Elements</td></tr>
+<tr><td style="width: 25%;"><a href="insert_named.html">remove_named.data.table</a></td>
+<td>Insert or Remove Named Elements</td></tr>
+<tr><td style="width: 25%;"><a href="insert_named.html">remove_named.environment</a></td>
+<td>Insert or Remove Named Elements</td></tr>
+<tr><td style="width: 25%;"><a href="require_namespaces.html">require_namespaces</a></td>
+<td>Require Multiple Namespaces</td></tr>
+<tr><td style="width: 25%;"><a href="rowwise_table.html">rowwise_table</a></td>
+<td>Row-Wise Constructor for 'data.table'</td></tr>
+<tr><td style="width: 25%;"><a href="sequence_helpers.html">sequence_helpers</a></td>
+<td>Sequence Construction Helpers</td></tr>
+<tr><td style="width: 25%;"><a href="sequence_helpers.html">seq_along0</a></td>
+<td>Sequence Construction Helpers</td></tr>
+<tr><td style="width: 25%;"><a href="sequence_helpers.html">seq_col</a></td>
+<td>Sequence Construction Helpers</td></tr>
+<tr><td style="width: 25%;"><a href="sequence_helpers.html">seq_len0</a></td>
+<td>Sequence Construction Helpers</td></tr>
+<tr><td style="width: 25%;"><a href="sequence_helpers.html">seq_row</a></td>
+<td>Sequence Construction Helpers</td></tr>
+<tr><td style="width: 25%;"><a href="set_class.html">set_class</a></td>
+<td>Set the Class</td></tr>
+<tr><td style="width: 25%;"><a href="set_names.html">set_col_names</a></td>
+<td>Set Names</td></tr>
+<tr><td style="width: 25%;"><a href="set_names.html">set_names</a></td>
+<td>Set Names</td></tr>
+<tr><td style="width: 25%;"><a href="shuffle.html">shuffle</a></td>
+<td>Safe Version of Sample</td></tr>
+<tr><td style="width: 25%;"><a href="compat-map.html">some</a></td>
+<td>Apply Functions in the spirit of 'purrr'</td></tr>
+<tr><td style="width: 25%;"><a href="printf.html">stopf</a></td>
+<td>Functions for Formatted Output and Conditions</td></tr>
+<tr><td style="width: 25%;"><a href="str_collapse.html">str_collapse</a></td>
+<td>Collapse Strings</td></tr>
+<tr><td style="width: 25%;"><a href="str_indent.html">str_indent</a></td>
+<td>Indent Strings</td></tr>
+<tr><td style="width: 25%;"><a href="str_trunc.html">str_trunc</a></td>
+<td>Truncate Strings</td></tr>
+<tr><td style="width: 25%;"><a href="topo_sort.html">topo_sort</a></td>
+<td>Topological Sorting of Dependency Graphs</td></tr>
+<tr><td style="width: 25%;"><a href="transpose_list.html">transpose_list</a></td>
+<td>Transpose lists of lists</td></tr>
+<tr><td style="width: 25%;"><a href="unnest.html">unnest</a></td>
+<td>Unnest List Data Table Columns</td></tr>
+<tr><td style="width: 25%;"><a href="printf.html">warningf</a></td>
+<td>Functions for Formatted Output and Conditions</td></tr>
+<tr><td style="width: 25%;"><a href="which_min.html">which_max</a></td>
+<td>Index of the Minimum/Maximum Value, with ties correction</td></tr>
+<tr><td style="width: 25%;"><a href="which_min.html">which_min</a></td>
+<td>Index of the Minimum/Maximum Value, with ties correction</td></tr>
+</table>
+</body></html>

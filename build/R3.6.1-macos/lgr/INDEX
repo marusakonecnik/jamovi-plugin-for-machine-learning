@@ -1,0 +1,48 @@
+AppenderBuffer          Log to a memory buffer
+AppenderConsole         Log to the console
+AppenderDbi             Log to databases via DBI
+AppenderDigest          Abstract class for digests
+AppenderDt              Log to an in-memory data.table
+AppenderFile            Log to a file
+AppenderFileRotating    Log to a rotating file
+AppenderGmail           Send emails via gmailr
+AppenderJson            Log to a JSON file
+AppenderMemory          Abstract class for logging to memory buffers
+AppenderPushbullet      Send push-notifications via RPushbullet
+AppenderRjdbc           Log to databases via RJDBC
+AppenderSendmail        Send emails via sendmailR
+AppenderSyslog          Log to the POSIX System Log
+AppenderTable           Abstract class for logging to tabular
+                        structures
+EventFilter             Event Filters
+LayoutDbi               Format Log Events for Output to Databases
+LayoutFormat            Format Log Events as Text
+LayoutGlue              Format Log Events as Text via glue
+LayoutJson              Format LogEvents as JSON
+LogEvent                Events - The Atomic Unit of Logging
+Logger                  Loggers
+as.data.frame.LogEvent
+                        Coerce LogEvents to Data Frames
+basic_config            Basic Setup for the Logging System
+colorize_levels         Colorize Levels
+default_exception_handler
+                        Demote an exception to a warning
+default_should_flush    Default should_flush function
+get_caller              Information About the System
+get_log_levels          Manage Log Levels
+get_logger              Get/Create a Logger
+is_filter               Check if an R Object is a Filter
+label_levels            Label/Unlabel Log Levels
+logger_config           Logger Configuration Objects
+logger_tree             Logger Tree
+pad_right               Pad Character Vectors
+print.Appender          Print an Appender object
+print.LogEvent          Print or Format Logging Data
+print.Logger            Print a Logger Object
+print.logger_tree       Print Logger Trees
+read_json_lines         Read a JSON logfile
+select_dbi_layout       Select Appropriate Database Table Layout
+simple_logging          Simple Logging
+suspend_logging         Suspend All Logging
+use_logger              Setup a Simple Logger for a Package
+with_log_level          Inject Values into Logging Calls

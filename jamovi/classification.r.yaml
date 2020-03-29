@@ -1,11 +1,72 @@
 ---
 name:  classification
-title: Classification
+title: Decision tree
 jrs:   '1.1'
 
 items:
-    - name:  text
-      title: Classification
-      type:  Preformatted
+    - name:  confusionMatrix
+      title: 'Confusion matrix'
+      visible: FALSE
+      type: Table
+      rows:  0
+      columns:
+        - name: class
+          title: 'response'
+          type: number
+
+    - name:  classifMetrices
+      title: 'Classification metrices'
+      type: Table
+      visible: FALSE
+      rows:  0
+      columns:
+        - name: class
+          title: 'class name'
+          type: text
+        - name: prec
+          title: 'precision'
+          type: number
+        - name: rec
+          title: 'recall'
+          type: number
+        - name: fscore
+          title: 'f-score'
+          type: number
+
+    - name:  classMeasures
+      visible: FALSE
+      title: ''
+      type: Table
+      rows:  1
+      columns:
+        - name: acc
+          title: 'Accuracy'
+          type: number
+        - name: bacc
+          title: 'Balanced accuracy'
+          type: number
+        - name: ce
+          title: 'Class. error'
+          type: number
+        - name: logloss
+          title: 'Log loss'
+          type: number
+
+    - name:  AUC
+      visible: FALSE
+      title: 'AUC'
+      type: Table
+      rows:  1
+      columns:
+        - name: acc
+          title: 'Accuracy'
+          type: number
+
+    - name: decisionTreePlot
+      title: Decision tree plot
+      type: Image
+      width:  400
+      height: 300
+      renderFun: .plot
 
 ...
