@@ -156,6 +156,7 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
 classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
     inherit = jmvcore::Group,
     active = list(
+        text = function() private$.items[["text"]],
         confusionMatrix = function() private$.items[["confusionMatrix"]],
         classifMetrices = function() private$.items[["classifMetrices"]],
         classMeasures = function() private$.items[["classMeasures"]],
@@ -168,6 +169,10 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                 options=options,
                 name="",
                 title="Decision tree")
+            self$add(jmvcore::Preformatted$new(
+                options=options,
+                name="text",
+                title=""))
             self$add(jmvcore::Table$new(
                 options=options,
                 name="confusionMatrix",
@@ -240,6 +245,7 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                 options=options,
                 name="decisionTreePlot",
                 title="Decision tree plot",
+                visible=FALSE,
                 width=400,
                 height=300,
                 renderFun=".plot"))}))
@@ -285,6 +291,7 @@ classificationBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' @param plotDecisionTree .
 #' @return A results object containing:
 #' \tabular{llllll}{
+#'   \code{results$text} \tab \tab \tab \tab \tab a preformatted \cr
 #'   \code{results$confusionMatrix} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$classifMetrices} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$classMeasures} \tab \tab \tab \tab \tab a table \cr

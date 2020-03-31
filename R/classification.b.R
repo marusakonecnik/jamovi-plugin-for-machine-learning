@@ -6,13 +6,12 @@ classificationClass <- if (requireNamespace('jmvcore')) R6::R6Class(
     inherit = classificationBase,
     private = list(
         .init = function() {
-            confusion <- jmvcore::Preformatted$new(self$options, 'confusion')
-            self$results$add(confusion)
-            measure <- jmvcore::Preformatted$new(self$options, 'measures')
-            self$results$add(measure)
+            preformatted <- jmvcore::Preformatted$new(self$options, 'preformatted')
+            self$results$add(preformatted)
+
         },
         .run = function() {
-            confusion <- self$results$get('confusion')
+            preformatted <- self$results$get('preformatted')
 
             if (length(self$options$dep)   == 0 ||
                 length(self$options$indep) == 0)
@@ -24,25 +23,24 @@ classificationClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             measuresTable <- self$results$classMeasures
             classifMetricesTable <- self$results$classifMetrices
 
-            # self$results[['confusionMatrix']]$setVisible(visible = TRUE)
-
             data[[self$options$dep]] <- jmvcore::toNumeric(data[[self$options$dep]])
 
+            #set visibility of tables
             reportingSize <- length(options$reporting)
             lapply(1:reportingSize, function(option) {
                 if (!is.null(options$reporting[option])) {
                     op <- options$reporting[option]
-
-                if (!is.na(op))
-                    self$results[[op]]$setVisible(visible = TRUE)
-
+                    if (!is.na(op)){
+                        self$results[[op]]$setVisible(visible = TRUE)
+                    }
                 }
              })
+
             #declare measures
             acc <- bacc <- ce <- logloss <- 0
 
-            #task creation
-            task <- TaskClassif$new(id = "cars", backend = data, target = self$options$dep)
+            task <- TaskClassif$new(id = "task", backend = data, target = self$options$dep)
+
             learner <- lrn("classif.rpart",
                              predict_type = 'prob',
                              minsplit = options$minSplit,
@@ -52,7 +50,6 @@ classificationClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                              cp = options$complecity)
 
             #testing
-            measures <- list()
             if(options$testing == "split" | options$testing == "trainSet") {
                 trainSet <- sample(task$nrow)
                 testSet <- trainSet
@@ -68,30 +65,24 @@ classificationClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                     logloss = prediction$score(msr("classif.logloss")),
                     ce = prediction$score(msr("classif.ce"))
                 )
+                predictions <- prediction
+
             } else {
                 resampling <- rsmp("cv", folds = options$noOfFolds)
                 resampling$instantiate(task)
                 rr <- resample(task, learner, resampling, store_models = TRUE)
                 measures <- list(
-                    acc = rr$aggregate(msr("classif.acc")),
-                    bacc = rr$aggregate(msr("classif.bacc")),
-                    logloss = rr$aggregate(msr("classif.logloss")),
-                    ce = rr$aggregate(msr("classif.ce"))
+                  acc = rr$aggregate(msr("classif.acc")),
+                  bacc = rr$aggregate(msr("classif.bacc")),
+                  logloss = rr$aggregate(msr("classif.logloss")),
+                  ce = rr$aggregate(msr("classif.ce"))
                 )
+                predictions <- rr$prediction(1)
             }
-
-            # prediction <- learner$predict(task, row_ids = testSet)
-
             #reporting
             if("confusionMatrix" %in% options$reporting) {
-                # confusionMatrix <- ifelse(options$testing == 'crossValidation', rr$prediction(1)$confusion, prediction$confusion)
-
-                if(options$testing == 'crossValidation') {
-                    confusionMatrix <- rr$prediction(1)$confusion
-                } else {
-                    confusionMatrix <- prediction$confusion
-                }
                 classNames <- levels(task$truth())
+                confusionMatrix <- predictions$confusion
 
                 lapply(classNames, function (className) {
                     confMatrixTable$addColumn(name = as.character(className), superTitle = 'truth', title = as.character(className), type = 'integer')
@@ -100,28 +91,39 @@ classificationClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 lapply(classNames, function (className) {
                     rowValues <- lapply(confusionMatrix[className, ], function(row) row)
                     rowValues[['class']] <- className
+
                     confMatrixTable$addRow(rowKey = className, values = rowValues)
-                    classifMetricesTable$addRow(rowKey = className, values = list(class = className))
                 })
             }
             if ("classifMetrices" %in% options$reporting) {
                 self$results[['classMeasures']]$setVisible(visible = TRUE)
-                measuresTable$setRow(rowNo=1, values= measures)
+                for (class in levels(task$truth())) {
+
+                    predicted <- rowSums(confusionMatrix)
+                    actual <- colSums(confusionMatrix)
+
+                    recall <- as.double(confusionMatrix[class, class] / actual[class])
+                    precision <- as.double(confusionMatrix[class, class] / predicted[class])
+                    fscore <- as.double(2 * ((precision * recall) / (precision + recall)))
+
+                    row <- list(class = class, prec = precision,rec = recall,fscore = fscore)
+
+                    classifMetricesTable$addRow(rowKey = class, values = row)
+                    measuresTable$setRow(rowNo=1, values= measures)
+                 }
             }
 
-
-            plotData <- mtcars
-            image <- self$results$decisionTreePlot
-            image$setState(plotData)
-
+            if(options$plotDecisionTree == TRUE)
+            {
+                 image <- self$results$decisionTreePlot
+                 image$setVisible(visible = TRUE)
+                 image$setState(task)
+            }
         },
         .plot=function(image, ...) {
             plotData <- image$state
-
-            plot <- ggplot(plotData, aes(x=2, y=2.4)) +
-                geom_errorbar(aes(ymin=mpg, ymax=cyl, width=.1)) +
-                geom_point(aes(x=2, y=3.5)) +
-                labs(title=self$options$dep)
+            #auto plot not working
+            plot <- autoplot(plotData)
             print(plot)
             TRUE
         })

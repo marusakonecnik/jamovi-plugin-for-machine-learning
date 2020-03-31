@@ -4,6 +4,10 @@ title: Decision tree
 jrs:   '1.1'
 
 items:
+    - name:  text
+      title: ''
+      type:  Preformatted
+
     - name:  confusionMatrix
       title: 'Confusion matrix'
       visible: FALSE
@@ -64,6 +68,7 @@ items:
 
     - name: decisionTreePlot
       title: Decision tree plot
+      visible: FALSE
       type: Image
       width:  400
       height: 300

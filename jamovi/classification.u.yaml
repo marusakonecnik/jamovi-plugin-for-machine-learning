@@ -58,14 +58,14 @@ children:
             type: CheckBox
             optionName: reporting
             optionPart: confusionMatrix
-          - name: reporting_AUC
-            type: CheckBox
-            optionName: reporting
-            optionPart: AUC
           - name: reporting_classifMetrices
             type: CheckBox
             optionName: reporting
             optionPart: classifMetrices
+          - name: reporting_AUC
+            type: CheckBox
+            optionName: reporting
+            optionPart: AUC
   - type: Label
     label: Classifier
     children:
