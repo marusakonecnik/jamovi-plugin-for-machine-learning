@@ -131,18 +131,18 @@ view.layout = ui.extend({
 							optionPart: "confusionMatrix"
 						},
 						{
-							name: "reporting_AUC",
-							type: DefaultControls.CheckBox,
-							typeName: 'CheckBox',
-							optionName: "reporting",
-							optionPart: "AUC"
-						},
-						{
 							name: "reporting_classifMetrices",
 							type: DefaultControls.CheckBox,
 							typeName: 'CheckBox',
 							optionName: "reporting",
 							optionPart: "classifMetrices"
+						},
+						{
+							name: "reporting_AUC",
+							type: DefaultControls.CheckBox,
+							typeName: 'CheckBox',
+							optionName: "reporting",
+							optionPart: "AUC"
 						}
 					]
 				}
