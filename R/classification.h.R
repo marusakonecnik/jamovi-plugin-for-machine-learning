@@ -160,7 +160,6 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
         confusionMatrix = function() private$.items[["confusionMatrix"]],
         classifMetrices = function() private$.items[["classifMetrices"]],
         classMeasures = function() private$.items[["classMeasures"]],
-        AUC = function() private$.items[["AUC"]],
         decisionTreePlot = function() private$.items[["decisionTreePlot"]]),
     private = list(),
     public=list(
@@ -227,17 +226,6 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                         `name`="value", 
                         `title`="Value", 
                         `type`="number"))))
-            self$add(jmvcore::Table$new(
-                options=options,
-                name="AUC",
-                visible=FALSE,
-                title="AUC",
-                rows=1,
-                columns=list(
-                    list(
-                        `name`="acc", 
-                        `title`="Accuracy", 
-                        `type`="number"))))
             self$add(jmvcore::Image$new(
                 options=options,
                 name="decisionTreePlot",
@@ -292,7 +280,6 @@ classificationBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #'   \code{results$confusionMatrix} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$classifMetrices} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$classMeasures} \tab \tab \tab \tab \tab a table \cr
-#'   \code{results$AUC} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$decisionTreePlot} \tab \tab \tab \tab \tab an image \cr
 #' }
 #'

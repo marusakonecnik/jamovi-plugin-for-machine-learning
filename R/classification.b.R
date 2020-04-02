@@ -18,30 +18,8 @@
 
                     data <- self$data
                     options <- self$options
-                    confMatrixTable <- self$results$confusionMatrix
-                    measuresTable <- self$results$classMeasures
-                    classifMetricesTable <- self$results$classifMetrices
 
                     data[[self$options$dep]] <- jmvcore::toNumeric(data[[self$options$dep]])
-
-                    #set visibility of tables
-
-                    if("AUC" %in% options$reporting) {
-                        classifMetricesTable$addColumn(name = "auc", title = "AUC", type = 'integer')
-                    }
-
-                    reportingSize <- length(options$reporting)
-                    lapply(1:reportingSize, function(option) {
-                        if (!is.null(options$reporting[option])) {
-                            op <- options$reporting[option]
-                            if (!is.na(op)){
-                                self$results[[op]]$setVisible(visible = TRUE)
-                            }
-                        }
-                     })
-
-                    #declare measures
-                    acc <- bacc <- ce <- logloss <- 0
 
                     task <- TaskClassif$new(id = "task", backend = data, target = self$options$dep)
 
@@ -53,98 +31,142 @@
                                      maxdepth = options$maxDepth,
                                      cp = options$complecity)
 
-                    #testing
-                    if(options$testing == "split" | options$testing == "trainSet") {
-                        trainSet <- sample(task$nrow)
-                        testSet <- trainSet
-                        if (options$testing == "split" & options$testSize != 0) {
-                            trainSet <- sample(task$nrow, (1- options$testSize) * task$nrow)
-                            testSet <- setdiff(seq_len(task$nrow), trainSet)
-                        }
-                        learner$train(task, row_ids = as.character(trainSet))
-                        prediction <- learner$predict(task, row_ids = as.character(testSet))
+                    predictions <- private$.trainModel(task,learner)
+                    private$.setOutput(predictions, preformatted)
 
-                        predictions <- prediction
-
-                    } else {
-                        resampling <- rsmp("cv", folds = options$noOfFolds)
-                        resampling$instantiate(task)
-                        rr <- resample(task, learner, resampling, store_models = TRUE)
-
-                        predictions <- rr$prediction(1)
-                    }
-                    #reporting
-                    if("confusionMatrix" %in% options$reporting) {
-                        classNames <- levels(task$truth())
-                        confusionMatrix <- predictions$confusion
-
-                        lapply(classNames, function (className) {
-                            confMatrixTable$addColumn(name = as.character(className), superTitle = 'truth', title = as.character(className), type = 'integer')
-                        })
-
-                        lapply(classNames, function (className) {
-                            rowValues <- lapply(confusionMatrix[className, ], function(row) row)
-                            rowValues[['class']] <- className
-
-                            confMatrixTable$addRow(rowKey = className, values = rowValues)
-                        })
-                    }
-                    if ("classifMetrices" %in% options$reporting) {
-                        self$results[['classMeasures']]$setVisible(visible = TRUE)
-                        for (class in levels(task$truth())) {
-                            recalls <- numeric(0)
-                            precisions <- numeric(0)
-                            fscores <- numeric(0)
-
-                            predicted <- rowSums(confusionMatrix)
-                            actual <- colSums(confusionMatrix)
-
-                            recall <- as.double(confusionMatrix[class, class] / actual[class])
-                            recalls[class] <- recall
-                            precision <- as.double(confusionMatrix[class, class] / predicted[class])
-                            precisions[class] <- precision
-                            fscore <-  as.double(2 * ((precision * recall) / (precision + recall)))
-                            fscores[class] <- fscore
-                            data_table <- as.data.table(predictions)
-                            transformed <- transform(data_table, truth = ifelse(truth != class, "negative", as.character(truth)))
-                            prob_column <- gsub("[[:space:]]", "", paste('prob.', class))
-
-                            if("AUC" %in% options$reporting) {
-                                row <- list(
-                                  class = class,
-                                  prec = precision,
-                                  rec = recall,
-                                  fscore = fscore,
-                                  auc = auc(as.factor(transformed$truth), data_table[[prob_column]], class)
-                            )
-                            } else {
-                                row <- list(class = class, prec = precision,rec = recall,fscore = fscore)
-                            }
-
-                            classifMetricesTable$addRow(rowKey = class, values = row)
-                        }
-                        metriceNames<- c(acc = 'Accuracy', bacc = 'Balanced accuracy', ce ='Classification error', logloss ='Log loss', macPrec ='Macro precision', macRec = 'Macro recall', macF1 = 'Macro F1')
-                        values <- list(
-                          acc = acc(predictions$truth, predictions$response),
-                          bacc = bacc(predictions$truth, predictions$response),
-                          ce = ce(predictions$truth, predictions$response),
-                          logloss = logloss(predictions$truth, predictions$prob),
-                          macRec = mean(recalls),
-                          macPrec = mean(precisions),
-                          macF1 = mean(fscores)
-                        )
-                        lapply(names(values), function(name) measuresTable$addRow(rowKey = name, values = list(metric = metriceNames[name], value = values[[name]])))
+                    #plot
+                    # if (self$options$plotDecisionTree == TRUE)
+                    # {
+                    #      image <- self$results$decisionTreePlot
+                    #      image$setVisible(visible = TRUE)
+                    #      image$setState(task)
+                    # }
+                },
+                .trainModel = function(task, learner) {
+                  if(self$options$testing == "split") {
+                     predictions <- private$.trainTestSplit(task, learner)
+                  } else {
+                     predictions <- private$.crossValidate(task, learner)
+                  }
+                  predictions
+                },
+                .setOutput = function(predictions, preformatted) {
+                    if("confusionMatrix" %in% self$options$reporting) {
+                        private$.showConfusionMatrix(predictions$confusion, preformatted)
                     }
 
-                    if(options$plotDecisionTree == TRUE)
-                    {
-                         image <- self$results$decisionTreePlot
-                         image$setVisible(visible = TRUE)
-                         image$setState(task)
+                    if("AUC" %in% self$options$reporting) {
+                        self$results$classifMetrices$addColumn(name = "auc", title = "AUC", type = 'integer')
+                    }
+
+                    if ("classifMetrices" %in% self$options$reporting) {
+                        private$.showScoringTables(predictions, preformatted)
                     }
                 },
-                .confusion = function(prediction) {
+                .crossValidate = function(task, learner) {
+                     resampling <- rsmp("cv", folds = self$options$noOfFolds)
+                     resampling$instantiate(task)
+                     rr <- resample(task, learner, resampling, store_models = TRUE)
+                     rr$prediction(1)
+                },
+                .trainTestSplit = function(task, learner) {
+                    trainSet <- sample(task$nrow)
+                    testSet <- trainSet
+                    if (self$options$testing == "split" & self$options$testSize != 0) {
+                            trainSet <- sample(task$nrow, (1- self$options$testSize) * task$nrow)
+                            testSet <- setdiff(seq_len(task$nrow), trainSet)
+                    }
 
+                    learner$train(task, row_ids = as.character(trainSet))
+                    prediction <- learner$predict(task, row_ids = as.character(testSet))
+
+                    prediction
+                },
+                .showConfusionMatrix = function(confusionMatrix, p) {
+                    self$results$confusionMatrix$setVisible(visible = TRUE)
+                    levels <- colnames(confusionMatrix)
+
+                    sapply(levels, function (level) { # add columns
+                        self$results$confusionMatrix$addColumn(
+                          name = level,
+                          superTitle = 'truth',
+                          title = level,
+                          type = 'integer')
+                    })
+
+                    sapply(levels, function (level) { # add rows
+                        rowValues <- as.list(confusionMatrix[level, ])
+                        rowValues[['class']] <- level
+                        self$results$confusionMatrix$addRow(rowKey = level, values = rowValues)
+                    })
+                    confusionMatrix
+                },
+                .calculateScoresPerClass = function(predictions, p) {
+                    confusionMatrix <- predictions$confusion
+                    levels <- colnames(confusionMatrix)
+
+                    recalls <- numeric(0)
+                    precisions <- numeric(0)
+                    fscores <- numeric(0)
+                    for (class in levels) {
+                        predicted <- rowSums(confusionMatrix)
+                        actual <- colSums(confusionMatrix)
+
+                        recall <- as.double(confusionMatrix[class, class] / actual[class])
+                        recalls[class] <- recall
+
+                        precision <- as.double(confusionMatrix[class, class] / predicted[class])
+                        precisions[class] <- precision
+
+                        fscore <-  as.double(2 * ((precision * recall) / (precision + recall)))
+                        fscores[class] <- fscore
+
+                        data_table <- as.data.table(predictions)
+                        transformed <- transform(data_table, truth = ifelse(truth != class, "negative", as.character(truth))) #replaces values that are not the right class
+                        prob_column <- gsub("[[:space:]]", "", paste('prob.', class)) #name of prob column, deletes space
+
+                        if ("AUC" %in% self$options$reporting) {
+                            row <- list(
+                              class = class,
+                              prec = precision,
+                              rec = recall,
+                              fscore = fscore,
+                              auc = auc(as.factor(transformed$truth), data_table[[prob_column]], class)
+                            )
+                        } else {
+                            row <- list(class = class, prec = precision, rec = recall, fscore = fscore)
+
+                        }
+
+                        self$results$classifMetrices$addRow(rowKey = class, values = row)
+                        macroMetrics <- c(macPrec = mean(precisions), macRec= mean(recalls), macF1 = mean(fscores))
+                    }
+                    macroMetrics
+                },
+                .showScoringTables = function(predictions, p) {
+                    self$results[['classMeasures']]$setVisible(visible = TRUE)
+                    self$results$classifMetrices$setVisible(visible = TRUE)
+
+                    scores <- private$.calculateScores(predictions,p)
+
+                    lapply(names(scores), function(name) {
+                              self$results$classMeasures$addRow(rowKey = name, values = list(metric = name, value = scores[[name]]))
+                    })
+                },
+                .calculateScores = function(predictions, p) {
+                   macro <- private$.calculateScoresPerClass(predictions, p)
+                   truth <- predictions$truth
+                   response <- predictions$response
+                   values <- list(
+                          "Accuracy" = acc(truth, response),
+                          "Balanced accuracy" = bacc(truth, response),
+                          "Class. error" = ce(truth, response),
+                          "Log loss" = logloss(truth, predictions$prob),
+                          "Macro recall" = mean(macro['macRec']),
+                          "Macro precision" = mean(macro['macPrec']),
+                          "Macro F1" = mean(macro['macF1'])
+                    )
+                    values
                 },
                 .plot=function(image, ...) {
                     plotData <- image$state

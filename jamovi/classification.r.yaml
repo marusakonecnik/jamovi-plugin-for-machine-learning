@@ -54,17 +54,6 @@ items:
           title: 'Value'
           type: number
 
-
-    - name:  AUC
-      visible: FALSE
-      title: 'AUC'
-      type: Table
-      rows:  1
-      columns:
-        - name: acc
-          title: 'Accuracy'
-          type: number
-
     - name: decisionTreePlot
       title: Decision tree plot
       visible: FALSE
