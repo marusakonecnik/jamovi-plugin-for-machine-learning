@@ -1,0 +1,11 @@
+exportPattern("^[[:alpha:]]+")
+import(mlr3)
+import(mlr3measures)
+
+
+
+export(classificationClass)
+export(classificationOptions)
+
+export(experimenterClass)
+export(experimenterOptions)

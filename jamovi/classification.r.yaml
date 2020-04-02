@@ -19,7 +19,7 @@ items:
           type: number
 
     - name:  classifMetrices
-      title: 'Classification metrices'
+      title: 'Per class'
       type: Table
       visible: FALSE
       rows:  0
@@ -36,25 +36,24 @@ items:
         - name: fscore
           title: 'f-score'
           type: number
+        - name: auc
+          title: 'AUC'
+          type: number
+          visible: FALSE
 
     - name:  classMeasures
       visible: FALSE
-      title: ''
+      title: 'Overall'
       type: Table
-      rows:  1
+      rows:  0
       columns:
-        - name: acc
-          title: 'Accuracy'
+        - name: metric
+          title: 'Metric'
+          type: text
+        - name: value
+          title: 'Value'
           type: number
-        - name: bacc
-          title: 'Balanced accuracy'
-          type: number
-        - name: ce
-          title: 'Class. error'
-          type: number
-        - name: logloss
-          title: 'Log loss'
-          type: number
+
 
     - name:  AUC
       visible: FALSE

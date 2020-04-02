@@ -187,7 +187,7 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
             self$add(jmvcore::Table$new(
                 options=options,
                 name="classifMetrices",
-                title="Classification metrices",
+                title="Per class",
                 visible=FALSE,
                 rows=0,
                 columns=list(
@@ -206,29 +206,26 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                     list(
                         `name`="fscore", 
                         `title`="f-score", 
-                        `type`="number"))))
+                        `type`="number"),
+                    list(
+                        `name`="auc", 
+                        `title`="AUC", 
+                        `type`="number", 
+                        `visible`=FALSE))))
             self$add(jmvcore::Table$new(
                 options=options,
                 name="classMeasures",
                 visible=FALSE,
-                title="",
-                rows=1,
+                title="Overall",
+                rows=0,
                 columns=list(
                     list(
-                        `name`="acc", 
-                        `title`="Accuracy", 
-                        `type`="number"),
+                        `name`="metric", 
+                        `title`="Metric", 
+                        `type`="text"),
                     list(
-                        `name`="bacc", 
-                        `title`="Balanced accuracy", 
-                        `type`="number"),
-                    list(
-                        `name`="ce", 
-                        `title`="Class. error", 
-                        `type`="number"),
-                    list(
-                        `name`="logloss", 
-                        `title`="Log loss", 
+                        `name`="value", 
+                        `title`="Value", 
                         `type`="number"))))
             self$add(jmvcore::Table$new(
                 options=options,

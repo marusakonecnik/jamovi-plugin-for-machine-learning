@@ -1,4 +1,5 @@
 exportPattern("^[[:alpha:]]+")
 import(mlr3)
+import(mlr3measures)
 
 
