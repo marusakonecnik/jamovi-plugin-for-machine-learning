@@ -18,32 +18,9 @@ items:
           title: 'response'
           type: number
 
-    - name:  classifMetrices
-      title: 'Per class'
-      type: Table
-      visible: FALSE
-      rows:  0
-      columns:
-        - name: class
-          title: 'class name'
-          type: text
-        - name: prec
-          title: 'precision'
-          type: number
-        - name: rec
-          title: 'recall'
-          type: number
-        - name: fscore
-          title: 'f-score'
-          type: number
-        - name: auc
-          title: 'AUC'
-          type: number
-          visible: FALSE
-
     - name:  classMeasures
       visible: FALSE
-      title: 'Overall'
+      title: 'General'
       type: Table
       rows:  0
       columns:
@@ -54,6 +31,32 @@ items:
           title: 'Value'
           type: number
 
+    - name:  classifMetrices
+      title: 'Per class'
+      type: Table
+      visible: FALSE
+      rows:  0
+      columns:
+        - name: class
+          title: 'class name'
+          type: text
+        - name: classif.precision
+          title: 'precision'
+          type: number
+          visible: FALSE
+        - name: classif.recall
+          title: 'recall'
+          type: number
+          visible: FALSE
+        - name: classif.fbeta
+          title: 'f-score'
+          type: number
+          visible: FALSE
+        - name: classif.auc
+          title: 'AUC'
+          type: number
+          visible: FALSE
+
     - name: decisionTreePlot
       title: Decision tree plot
       visible: FALSE
@@ -61,5 +64,7 @@ items:
       width:  400
       height: 300
       renderFun: .plot
+
+
 
 ...

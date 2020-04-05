@@ -158,8 +158,8 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
     active = list(
         text = function() private$.items[["text"]],
         confusionMatrix = function() private$.items[["confusionMatrix"]],
-        classifMetrices = function() private$.items[["classifMetrices"]],
         classMeasures = function() private$.items[["classMeasures"]],
+        classifMetrices = function() private$.items[["classifMetrices"]],
         decisionTreePlot = function() private$.items[["decisionTreePlot"]]),
     private = list(),
     public=list(
@@ -185,37 +185,9 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                         `type`="number"))))
             self$add(jmvcore::Table$new(
                 options=options,
-                name="classifMetrices",
-                title="Per class",
-                visible=FALSE,
-                rows=0,
-                columns=list(
-                    list(
-                        `name`="class", 
-                        `title`="class name", 
-                        `type`="text"),
-                    list(
-                        `name`="prec", 
-                        `title`="precision", 
-                        `type`="number"),
-                    list(
-                        `name`="rec", 
-                        `title`="recall", 
-                        `type`="number"),
-                    list(
-                        `name`="fscore", 
-                        `title`="f-score", 
-                        `type`="number"),
-                    list(
-                        `name`="auc", 
-                        `title`="AUC", 
-                        `type`="number", 
-                        `visible`=FALSE))))
-            self$add(jmvcore::Table$new(
-                options=options,
                 name="classMeasures",
                 visible=FALSE,
-                title="Overall",
+                title="General",
                 rows=0,
                 columns=list(
                     list(
@@ -226,6 +198,37 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                         `name`="value", 
                         `title`="Value", 
                         `type`="number"))))
+            self$add(jmvcore::Table$new(
+                options=options,
+                name="classifMetrices",
+                title="Per class",
+                visible=FALSE,
+                rows=0,
+                columns=list(
+                    list(
+                        `name`="class", 
+                        `title`="class name", 
+                        `type`="text"),
+                    list(
+                        `name`="classif.precision", 
+                        `title`="precision", 
+                        `type`="number", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="classif.recall", 
+                        `title`="recall", 
+                        `type`="number", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="classif.fbeta", 
+                        `title`="f-score", 
+                        `type`="number", 
+                        `visible`=FALSE),
+                    list(
+                        `name`="classif.auc", 
+                        `title`="AUC", 
+                        `type`="number", 
+                        `visible`=FALSE))))
             self$add(jmvcore::Image$new(
                 options=options,
                 name="decisionTreePlot",
@@ -278,8 +281,8 @@ classificationBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' \tabular{llllll}{
 #'   \code{results$text} \tab \tab \tab \tab \tab a preformatted \cr
 #'   \code{results$confusionMatrix} \tab \tab \tab \tab \tab a table \cr
-#'   \code{results$classifMetrices} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$classMeasures} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$classifMetrices} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$decisionTreePlot} \tab \tab \tab \tab \tab an image \cr
 #' }
 #'
