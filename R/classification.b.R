@@ -18,7 +18,7 @@
 
                     data <- as.data.table(self$data)
 
-                    data[[self$options$dep]] <- jmvcore::toNumeric(data[[self$options$dep]])
+                    # data[[self$options$dep]] <- jmvcore::toNumeric(data[[self$options$dep]])
 
                     task <- TaskClassif$new(id = "task", backend = data[complete.cases(data), ], target = self$options$dep)
 
