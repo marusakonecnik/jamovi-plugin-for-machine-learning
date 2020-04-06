@@ -30,20 +30,20 @@
                                      maxdepth = self$options$maxDepth,
                                      cp = self$options$complecity)
 
-                    predictions <- private$.trainModel(task,learner, preformatted)
+                    predictions <- private$.trainModel(task,learner)
 
                 },
-                .trainModel = function(task, learner, p) {
+                .trainModel = function(task, learner) {
                   if(self$options$testing == "split" | self$options$testing == "trainSet") {
                      predictions <- private$.trainTestSplit(task, learner)
-                     private$.setOutput(predictions, predictions, p)
+                     private$.setOutput(predictions, predictions)
                   } else {
                      predictions <- private$.crossValidate(task, learner)
-                     private$.setOutput(predictions$prediction(), predictions, p)
+                     private$.setOutput(predictions$prediction(), predictions)
                   }
                   predictions
                 },
-                .setOutput = function(predictions, plotData, p) {
+                .setOutput = function(predictions, plotData) {
                     levels <- levels(predictions$truth)
                     scores <- vector()
 
@@ -133,7 +133,7 @@
                         self$results$classificationMetrices$general$addRow(rowKey = name, values = list(metric = metricesDict[name], value = general[[name]]))
                     })
                 },
-                .convertToBinary = function(class, predictions, p) {
+                .convertToBinary = function(class, predictions) {
                   transformed <- transform(as.data.table(predictions), truth = ifelse(truth != class, "negative", as.character(truth)))
                   transformed <- transform(as.data.table(transformed), response = ifelse(response != class, "negative", as.character(response)))
 
