@@ -12,13 +12,23 @@ options:
     - name: dep
       title: Dependent Variable
       type: Variable
+      suggested:
+        - nominal
+      permitted:
+        - factor
 
     - name: indep
       title: Independent Variables
       type: Variables
+      suggested:
+        - nominal
+        - continuous
+      permitted:
+        - factor
+        - numeric
 
     - name: testSize
-      title:  Testing
+      title:  Testing perc.
       type: Number
       default: 0.33
 
@@ -43,18 +53,20 @@ options:
       title: Reporting
       options:
         - name: classifMetrices
-          title: Classification metrices
+          title: Classification metrics
         - name: confusionMatrix
           title: Confusion Matrix
         - name: AUC
           title: AUC
+      default:
+          - classifMetrices
 
     - name: classifier
       title: Classifier
       type: List
       options:
         - name: simpleDecisionTree
-          title: Simple decision tree
+          title: Single decision tree
         - name: randomForest
           title: Random forest
 
@@ -100,6 +112,11 @@ options:
 
     - name: plotDecisionTree
       title: Plot decision tree
+      type: Bool
+      default: false
+
+    - name: predictedFreq
+      title: Predicted frequencies
       type: Bool
       default: false
 

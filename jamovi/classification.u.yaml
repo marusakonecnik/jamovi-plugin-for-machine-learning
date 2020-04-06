@@ -122,3 +122,5 @@ children:
         children:
           - type: CheckBox
             name: plotDecisionTree
+          - type: CheckBox
+            name: predictedFreq

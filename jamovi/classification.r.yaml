@@ -9,7 +9,7 @@ items:
     type:  Preformatted
 
   - name: confusion
-    title: Confusion matrix
+    title: Confusion matric
     type: Group
     items:
       - name:  matrix
@@ -22,8 +22,8 @@ items:
             title: 'response'
             type: number
 
-  - name: classificationMetrices
-    title: Classification metrices
+  - name: classificationMetrics
+    title: Classification metrics
     type: Group
     items:
       - name:  general
@@ -56,7 +56,7 @@ items:
             type: number
             visible: FALSE
           - name: classif.fbeta
-            title: 'f-score'
+            title: 'F-score'
             type: number
             visible: FALSE
           - name: classif.auc
@@ -64,22 +64,28 @@ items:
             type: number
             visible: FALSE
 
-
   - name: rocCurvePlot
-    title: Roc curve
+    title: ROC curve
     visible: FALSE
     type: Image
     width:  400
     height: 300
     renderFun: .rocCurve
 
-  - name: decisionTreePlot
-    title: Decision tree plot
+  - name: predictedFreqPlot
+    title: Predicted frequencies
     visible: FALSE
     type: Image
     width:  400
     height: 300
-    renderFun: .plot
+    renderFun: .frequenciesPlot
 
+  - name: decisionTreeModel
+    title: Decision tree model
+    visible: FALSE
+    type: Image
+    width:  400
+    height: 300
+    renderFun: .printDecisionTree
 
 ...
