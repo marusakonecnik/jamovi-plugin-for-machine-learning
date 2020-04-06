@@ -31,46 +31,57 @@
                                      cp = self$options$complecity)
 
                     predictions <- private$.trainModel(task,learner, preformatted)
-                    private$.setOutput(predictions, preformatted)
 
                 },
                 .trainModel = function(task, learner, p) {
                   if(self$options$testing == "split" | self$options$testing == "trainSet") {
-                     predictions <- private$.trainTestSplit(task, learner, p)
+                     predictions <- private$.trainTestSplit(task, learner)
+                     private$.setOutput(predictions, predictions, p)
                   } else {
                      predictions <- private$.crossValidate(task, learner)
+                     private$.setOutput(predictions$prediction(), predictions, p)
                   }
                   predictions
                 },
-                .setOutput = function(predictions, preformatted) {
-                    scores <- c("classif.precision", "classif.recall", "classif.fbeta")
-                    if("confusionMatrix" %in% self$options$reporting) {
-                        private$.showConfusionMatrix(predictions$confusion, preformatted)
+                .setOutput = function(predictions, plotData, p) {
+                    levels <- levels(predictions$truth)
+                    scores <- vector()
+
+                    if(any(self$options$reporting == 'confusionMatrix')) {
+                        private$.showConfusionMatrix(predictions$confusion)
                     }
 
-                    if ("classifMetrices" %in% self$options$reporting) {
-                        lapply(scores, function(colname) self$results$classifMetrices$columns[[colname]]$setVisible(TRUE))
+                    if (any(self$options$reporting == "classifMetrices") | any(self$options$reporting == "AUC")) {
+                      scores <- vector()
 
-                        if("AUC" %in% self$options$reporting) {
-                          scores <- c("classif.precision", "classif.recall", "classif.fbeta", "classif.auc")
-                          self$results$classifMetrices$columns[["classif.auc"]]$setVisible(TRUE)
-                        }
-                        private$.showClassificationMetrices(predictions, scores)
+                      if(any(self$options$reporting == "classifMetrices")) {
+                        scores <- c(scores, "classif.precision", "classif.recall", "classif.fbeta")
+
+                      }
+
+                      if(any(self$options$reporting == "AUC")) {
+                          scores <- c(scores, "classif.auc")
+
+                          self$results$rocCurvePlot$setVisible(TRUE)
+                          binaryPredictions <- sapply(levels, function(level) private$.convertToBinary(level, predictions), USE.NAMES = TRUE)
+                          self$results$rocCurvePlot$setState(binaryPredictions)
+                      }
+                      lapply(scores, function(colname) self$results$classificationMetrices$class$columns[[colname]]$setVisible(TRUE))
+                      private$.showClassificationMetrices(predictions, scores)
                     }
 
-                    if (self$options$plotDecisionTree == TRUE){
-                         image <- self$results$decisionTreePlot
-                         image$setVisible(visible = TRUE)
-                         image$setState(predictions)
-                    }
+                  if (self$options$plotDecisionTree == TRUE) {
+                       self$results$decisionTreePlot$setVisible(visible = TRUE)
+                       self$results$decisionTreePlot$setState(plotData)
+                  }
                 },
                 .crossValidate = function(task, learner) {
                      resampling <- rsmp("cv", folds = self$options$noOfFolds)
                      resampling$instantiate(task)
                      rr <- resample(task, learner, resampling, store_models = TRUE)
-                     rr$prediction(1)
+                     rr
                 },
-                .trainTestSplit = function(task, learner, p) {
+                .trainTestSplit = function(task, learner) {
 
                     trainSet <- sample(task$nrow)
                     testSet <- trainSet
@@ -83,11 +94,12 @@
 
                     prediction
                 },
-                .showConfusionMatrix = function(confusionMatrix, p) {
-                    self$results$confusionMatrix$setVisible(visible = TRUE)
+                .showConfusionMatrix = function(confusionMatrix) {
+                    self$results$confusion$matrix$setVisible(visible = TRUE)
                     levels <- colnames(confusionMatrix)[!is.na(colnames(confusionMatrix))] # get levels, removes .na values if any
+
                     lapply(levels, function (level) { # add columns
-                        self$results$confusionMatrix$addColumn(
+                        self$results$confusion$matrix$addColumn(
                           name = level,
                           superTitle = 'truth',
                           title = level,
@@ -97,13 +109,13 @@
                     lapply(levels, function (level) { # add rows
                         rowValues <- as.list(confusionMatrix[level, ])
                         rowValues[['class']] <- level
-                        self$results$confusionMatrix$addRow(rowKey = level, values = rowValues)
+                        self$results$confusion$matrix$addRow(rowKey = level, values = rowValues)
                     })
                     confusionMatrix
                 },
                 .showClassificationMetrices = function(predictions, outputScores) {
-                    self$results$classMeasures$setVisible(visible = TRUE)
-                    self$results$classifMetrices$setVisible(visible = TRUE)
+                    self$results$classificationMetrices$general$setVisible(visible = TRUE)
+                    self$results$classificationMetrices$class$setVisible(visible = TRUE)
                     scores <- private$.calculateScores(predictions,outputScores)
 
                     metricesDict <- c(
@@ -118,7 +130,7 @@
                     #fill general table scores
                     general <- scores[['general']]
                     lapply(names(general), function(name) {
-                        self$results$classMeasures$addRow(rowKey = name, values = list(metric = metricesDict[name], value = general[[name]]))
+                        self$results$classificationMetrices$general$addRow(rowKey = name, values = list(metric = metricesDict[name], value = general[[name]]))
                     })
                 },
                 .convertToBinary = function(class, predictions, p) {
@@ -146,7 +158,7 @@
                        scores <- as.list(binaryPrediction$score(msrs(outputScores)))
                        scores[['class']] <- class
                        classScores[[class]] <- scores
-                       self$results$classifMetrices$addRow(rowKey = class, values = scores)
+                       self$results$classificationMetrices$class$addRow(rowKey = class, values = scores)
                    }
 
                    #calculate macro scores
@@ -159,7 +171,19 @@
                     class = classScores
                   )
                 },
-                .plot=function(image, ...) {
+                .rocCurve = function(image, ...) {
+                    plotData <- image$state
+                    plotList <- lapply(names(plotData), function(class) {
+                        mlr3viz::autoplot(plotData[[class]], type = 'roc')
+                    })
+                    plot <- ggpubr::ggarrange(plotlist = plotList,
+                    labels = names(plotData),
+                    font.label = list(size = 8, color = "black", face =  "bold", family = NULL),
+                    ncol = 2, nrow = round(length(names(plotData))/2))
+
+                    print(plot)
+                },
+                .plot = function(image, ...) {
                     plotData <- image$state
                     plot <- mlr3viz::autoplot(plotData)
                     print(plot)

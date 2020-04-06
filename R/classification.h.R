@@ -157,9 +157,9 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
     inherit = jmvcore::Group,
     active = list(
         text = function() private$.items[["text"]],
-        confusionMatrix = function() private$.items[["confusionMatrix"]],
-        classMeasures = function() private$.items[["classMeasures"]],
-        classifMetrices = function() private$.items[["classifMetrices"]],
+        confusion = function() private$.items[["confusion"]],
+        classificationMetrices = function() private$.items[["classificationMetrices"]],
+        rocCurvePlot = function() private$.items[["rocCurvePlot"]],
         decisionTreePlot = function() private$.items[["decisionTreePlot"]]),
     private = list(),
     public=list(
@@ -172,63 +172,94 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                 options=options,
                 name="text",
                 title=""))
-            self$add(jmvcore::Table$new(
+            self$add(R6::R6Class(
+                inherit = jmvcore::Group,
+                active = list(
+                    matrix = function() private$.items[["matrix"]]),
+                private = list(),
+                public=list(
+                    initialize=function(options) {
+                        super$initialize(
+                            options=options,
+                            name="confusion",
+                            title="Confusion matrix")
+                        self$add(jmvcore::Table$new(
+                            options=options,
+                            name="matrix",
+                            title="Confusion matrix",
+                            visible=FALSE,
+                            rows=0,
+                            columns=list(
+                                list(
+                                    `name`="class", 
+                                    `title`="response", 
+                                    `type`="number"))))}))$new(options=options))
+            self$add(R6::R6Class(
+                inherit = jmvcore::Group,
+                active = list(
+                    general = function() private$.items[["general"]],
+                    class = function() private$.items[["class"]]),
+                private = list(),
+                public=list(
+                    initialize=function(options) {
+                        super$initialize(
+                            options=options,
+                            name="classificationMetrices",
+                            title="Classification metrices")
+                        self$add(jmvcore::Table$new(
+                            options=options,
+                            name="general",
+                            visible=FALSE,
+                            title="General",
+                            rows=0,
+                            columns=list(
+                                list(
+                                    `name`="metric", 
+                                    `title`="Metric", 
+                                    `type`="text"),
+                                list(
+                                    `name`="value", 
+                                    `title`="Value", 
+                                    `type`="number"))))
+                        self$add(jmvcore::Table$new(
+                            options=options,
+                            name="class",
+                            title="Per class",
+                            visible=FALSE,
+                            rows=0,
+                            columns=list(
+                                list(
+                                    `name`="class", 
+                                    `title`="class name", 
+                                    `type`="text"),
+                                list(
+                                    `name`="classif.precision", 
+                                    `title`="precision", 
+                                    `type`="number", 
+                                    `visible`=FALSE),
+                                list(
+                                    `name`="classif.recall", 
+                                    `title`="recall", 
+                                    `type`="number", 
+                                    `visible`=FALSE),
+                                list(
+                                    `name`="classif.fbeta", 
+                                    `title`="f-score", 
+                                    `type`="number", 
+                                    `visible`=FALSE),
+                                list(
+                                    `name`="classif.auc", 
+                                    `title`="AUC", 
+                                    `type`="number", 
+                                    `visible`=FALSE))))}))$new(options=options))
+            self$add(jmvcore::Image$new(
                 options=options,
-                name="confusionMatrix",
-                title="Confusion matrix",
+                name="rocCurvePlot",
+                title="Roc curve",
                 visible=FALSE,
-                rows=0,
-                columns=list(
-                    list(
-                        `name`="class", 
-                        `title`="response", 
-                        `type`="number"))))
-            self$add(jmvcore::Table$new(
-                options=options,
-                name="classMeasures",
-                visible=FALSE,
-                title="General",
-                rows=0,
-                columns=list(
-                    list(
-                        `name`="metric", 
-                        `title`="Metric", 
-                        `type`="text"),
-                    list(
-                        `name`="value", 
-                        `title`="Value", 
-                        `type`="number"))))
-            self$add(jmvcore::Table$new(
-                options=options,
-                name="classifMetrices",
-                title="Per class",
-                visible=FALSE,
-                rows=0,
-                columns=list(
-                    list(
-                        `name`="class", 
-                        `title`="class name", 
-                        `type`="text"),
-                    list(
-                        `name`="classif.precision", 
-                        `title`="precision", 
-                        `type`="number", 
-                        `visible`=FALSE),
-                    list(
-                        `name`="classif.recall", 
-                        `title`="recall", 
-                        `type`="number", 
-                        `visible`=FALSE),
-                    list(
-                        `name`="classif.fbeta", 
-                        `title`="f-score", 
-                        `type`="number", 
-                        `visible`=FALSE),
-                    list(
-                        `name`="classif.auc", 
-                        `title`="AUC", 
-                        `type`="number", 
-                        `visible`=FALSE))))
+                width=400,
+                height=300,
+                renderFun=".rocCurve"))
             self$add(jmvcore::Image$new(
                 options=options,
                 name="decisionTreePlot",
@@ -280,17 +311,12 @@ classificationBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$text} \tab \tab \tab \tab \tab a preformatted \cr
-#'   \code{results$confusionMatrix} \tab \tab \tab \tab \tab a table \cr
-#'   \code{results$classMeasures} \tab \tab \tab \tab \tab a table \cr
-#'   \code{results$classifMetrices} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$confusion$matrix} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$classificationMetrices$general} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$classificationMetrices$class} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$rocCurvePlot} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$decisionTreePlot} \tab \tab \tab \tab \tab an image \cr
 #' }
-#'
-#' Tables can be converted to data frames with \code{asDF} or \code{\link{as.data.frame}}. For example:
-#'
-#' \code{results$confusionMatrix$asDF}
-#'
-#' \code{as.data.frame(results$confusionMatrix)}
 #'
 #' @export
 classification <- function(
