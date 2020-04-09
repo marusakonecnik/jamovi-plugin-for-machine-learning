@@ -22,8 +22,14 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             unsurrogate = 2,
             noCrossValidations = 10,
             maxDepth = 30,
+            noOfTrees = 10,
+            maxDepthRandFor = 30,
+            sampleFraction = 1,
+            splitRule = NULL,
             plotDecisionTree = FALSE,
-            predictedFreq = FALSE, ...) {
+            predictedFreq = FALSE,
+            printRandForest = FALSE,
+            predictedFreqRF = FALSE, ...) {
 
             super$initialize(
                 package='MachineLearning',
@@ -75,7 +81,7 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
                 "classifier",
                 classifier,
                 options=list(
-                    "simpleDecisionTree",
+                    "singleDecisionTree",
                     "randomForest"))
             private$..minSplit <- jmvcore::OptionNumber$new(
                 "minSplit",
@@ -109,6 +115,25 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
                 "maxDepth",
                 maxDepth,
                 default=30)
+            private$..noOfTrees <- jmvcore::OptionNumber$new(
+                "noOfTrees",
+                noOfTrees,
+                default=10)
+            private$..maxDepthRandFor <- jmvcore::OptionNumber$new(
+                "maxDepthRandFor",
+                maxDepthRandFor,
+                default=30)
+            private$..sampleFraction <- jmvcore::OptionNumber$new(
+                "sampleFraction",
+                sampleFraction,
+                default=1)
+            private$..splitRule <- jmvcore::OptionList$new(
+                "splitRule",
+                splitRule,
+                options=list(
+                    "gini",
+                    "extratrees",
+                    "hellinger"))
             private$..plotDecisionTree <- jmvcore::OptionBool$new(
                 "plotDecisionTree",
                 plotDecisionTree,
@@ -116,6 +141,14 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             private$..predictedFreq <- jmvcore::OptionBool$new(
                 "predictedFreq",
                 predictedFreq,
+                default=FALSE)
+            private$..printRandForest <- jmvcore::OptionBool$new(
+                "printRandForest",
+                printRandForest,
+                default=FALSE)
+            private$..predictedFreqRF <- jmvcore::OptionBool$new(
+                "predictedFreqRF",
+                predictedFreqRF,
                 default=FALSE)
 
             self$.addOption(private$..dep)
@@ -133,8 +166,14 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
             self$.addOption(private$..unsurrogate)
             self$.addOption(private$..noCrossValidations)
             self$.addOption(private$..maxDepth)
+            self$.addOption(private$..noOfTrees)
+            self$.addOption(private$..maxDepthRandFor)
+            self$.addOption(private$..sampleFraction)
+            self$.addOption(private$..splitRule)
             self$.addOption(private$..plotDecisionTree)
             self$.addOption(private$..predictedFreq)
+            self$.addOption(private$..printRandForest)
+            self$.addOption(private$..predictedFreqRF)
         }),
     active = list(
         dep = function() private$..dep$value,
@@ -152,8 +191,14 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         unsurrogate = function() private$..unsurrogate$value,
         noCrossValidations = function() private$..noCrossValidations$value,
         maxDepth = function() private$..maxDepth$value,
+        noOfTrees = function() private$..noOfTrees$value,
+        maxDepthRandFor = function() private$..maxDepthRandFor$value,
+        sampleFraction = function() private$..sampleFraction$value,
+        splitRule = function() private$..splitRule$value,
         plotDecisionTree = function() private$..plotDecisionTree$value,
-        predictedFreq = function() private$..predictedFreq$value),
+        predictedFreq = function() private$..predictedFreq$value,
+        printRandForest = function() private$..printRandForest$value,
+        predictedFreqRF = function() private$..predictedFreqRF$value),
     private = list(
         ..dep = NA,
         ..indep = NA,
@@ -170,19 +215,27 @@ classificationOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
         ..unsurrogate = NA,
         ..noCrossValidations = NA,
         ..maxDepth = NA,
+        ..noOfTrees = NA,
+        ..maxDepthRandFor = NA,
+        ..sampleFraction = NA,
+        ..splitRule = NA,
         ..plotDecisionTree = NA,
-        ..predictedFreq = NA)
+        ..predictedFreq = NA,
+        ..printRandForest = NA,
+        ..predictedFreqRF = NA)
 )
 
 classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
     inherit = jmvcore::Group,
     active = list(
-        text = function() private$.items[["text"]],
+        modelSettings = function() private$.items[["modelSettings"]],
         confusion = function() private$.items[["confusion"]],
         classificationMetrics = function() private$.items[["classificationMetrics"]],
         rocCurvePlot = function() private$.items[["rocCurvePlot"]],
+        decisionTreeModel = function() private$.items[["decisionTreeModel"]],
         predictedFreqPlot = function() private$.items[["predictedFreqPlot"]],
-        decisionTreeModel = function() private$.items[["decisionTreeModel"]]),
+        printRandForest = function() private$.items[["printRandForest"]],
+        text = function() private$.items[["text"]]),
     private = list(),
     public=list(
         initialize=function(options) {
@@ -190,10 +243,10 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                 options=options,
                 name="",
                 title="Decision tree")
-            self$add(jmvcore::Preformatted$new(
+            self$add(jmvcore::Html$new(
                 options=options,
-                name="text",
-                title=""))
+                name="modelSettings",
+                title="Model parameters"))
             self$add(R6::R6Class(
                 inherit = jmvcore::Group,
                 active = list(
@@ -284,20 +337,50 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                 renderFun=".rocCurve"))
             self$add(jmvcore::Image$new(
                 options=options,
-                name="predictedFreqPlot",
-                title="Predicted frequencies",
-                visible=FALSE,
-                width=400,
-                height=300,
-                renderFun=".frequenciesPlot"))
-            self$add(jmvcore::Image$new(
-                options=options,
                 name="decisionTreeModel",
                 title="Decision tree model",
                 visible=FALSE,
                 width=400,
                 height=300,
-                renderFun=".printDecisionTree"))}))
+                renderFun=".printDecisionTree"))
+            self$add(jmvcore::Image$new(
+                options=options,
+                name="predictedFreqPlot",
+                title="Predicted frequencies",
+                visible=FALSE,
+                width=350,
+                height=450,
+                renderFun=".frequenciesPlot"))
+            self$add(R6::R6Class(
+                inherit = jmvcore::Group,
+                active = list(
+                    randomForestModel = function() private$.items[["randomForestModel"]]),
+                private = list(),
+                public=list(
+                    initialize=function(options) {
+                        super$initialize(
+                            options=options,
+                            name="printRandForest",
+                            title="Random forest model")
+                        self$add(jmvcore::Table$new(
+                            options=options,
+                            name="randomForestModel",
+                            title="",
+                            visible=FALSE,
+                            rows=8,
+                            columns=list(
+                                list(
+                                    `name`="type", 
+                                    `title`="Type", 
+                                    `type`="Text"),
+                                list(
+                                    `name`="classif", 
+                                    `title`="Classification", 
+                                    `type`="Number"))))}))$new(options=options))
+            self$add(jmvcore::Preformatted$new(
+                options=options,
+                name="text",
+                title=""))}))
 
 classificationBase <- if (requireNamespace('jmvcore')) R6::R6Class(
     "classificationBase",
@@ -337,17 +420,25 @@ classificationBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' @param unsurrogate .
 #' @param noCrossValidations .
 #' @param maxDepth .
+#' @param noOfTrees .
+#' @param maxDepthRandFor .
+#' @param sampleFraction .
+#' @param splitRule .
 #' @param plotDecisionTree .
 #' @param predictedFreq .
+#' @param printRandForest .
+#' @param predictedFreqRF .
 #' @return A results object containing:
 #' \tabular{llllll}{
-#'   \code{results$text} \tab \tab \tab \tab \tab a preformatted \cr
+#'   \code{results$modelSettings} \tab \tab \tab \tab \tab a html \cr
 #'   \code{results$confusion$matrix} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$classificationMetrics$general} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$classificationMetrics$class} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$rocCurvePlot} \tab \tab \tab \tab \tab an image \cr
-#'   \code{results$predictedFreqPlot} \tab \tab \tab \tab \tab an image \cr
 #'   \code{results$decisionTreeModel} \tab \tab \tab \tab \tab an image \cr
+#'   \code{results$predictedFreqPlot} \tab \tab \tab \tab \tab an image \cr
+#'   \code{results$printRandForest$randomForestModel} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$text} \tab \tab \tab \tab \tab a preformatted \cr
 #' }
 #'
 #' @export
@@ -369,8 +460,14 @@ classification <- function(
     unsurrogate = 2,
     noCrossValidations = 10,
     maxDepth = 30,
+    noOfTrees = 10,
+    maxDepthRandFor = 30,
+    sampleFraction = 1,
+    splitRule,
     plotDecisionTree = FALSE,
-    predictedFreq = FALSE) {
+    predictedFreq = FALSE,
+    printRandForest = FALSE,
+    predictedFreqRF = FALSE) {
 
     if ( ! requireNamespace('jmvcore'))
         stop('classification requires jmvcore to be installed (restart may be required)')
@@ -401,8 +498,14 @@ classification <- function(
         unsurrogate = unsurrogate,
         noCrossValidations = noCrossValidations,
         maxDepth = maxDepth,
+        noOfTrees = noOfTrees,
+        maxDepthRandFor = maxDepthRandFor,
+        sampleFraction = sampleFraction,
+        splitRule = splitRule,
         plotDecisionTree = plotDecisionTree,
-        predictedFreq = predictedFreq)
+        predictedFreq = predictedFreq,
+        printRandForest = printRandForest,
+        predictedFreqRF = predictedFreqRF)
 
     analysis <- classificationClass$new(
         options = options,

@@ -24,55 +24,76 @@ children:
   - type: LayoutBox
     margin: large
     style: inline
+    stretchFactor: 1
     children:
-      - type: Label
-        label: Testing
+      - type: LayoutBox
+        stretchFactor: 1
+        cell:
+          column: 0
+          row: 0
         children:
-          - type: LayoutBox
-            margin: large
+          - type: Label
+            label: Testing
             children:
-              - type: RadioButton
-                name: testing_train
-                optionName: testing
-                optionPart: trainSet
-              - type: RadioButton
-                name: testing_split
-                optionName: testing
-                optionPart: split
+              - type: LayoutBox
+                margin: large
                 children:
-                  - type: TextBox
-                    name: testSize
-                    format: number
-              - type: RadioButton
-                name: testing_crossValidation
-                optionName: testing
-                optionPart: crossValidation
-                children:
-                  - type: TextBox
-                    name: noOfFolds
-                    format: number
-      - type: Label
-        label: Reporting
+                  - type: RadioButton
+                    name: testing_train
+                    optionName: testing
+                    optionPart: trainSet
+                  - type: RadioButton
+                    name: testing_split
+                    optionName: testing
+                    optionPart: split
+                    children:
+                      - type: TextBox
+                        name: testSize
+                        format: number
+                        suffix: '%'
+                        enable: (testing_split)
+                  - type: RadioButton
+                    name: testing_crossValidation
+                    optionName: testing
+                    optionPart: crossValidation
+                    children:
+                      - type: TextBox
+                        name: noOfFolds
+                        format: number
+                        enable: (testing_crossValidation)
+      - type: LayoutBox
+        margin: large
+        stretchFactor: 1
+        cell:
+          column: 1
+          row: 0
         children:
-          - name: reporting_confusionMatrix
-            type: CheckBox
-            optionName: reporting
-            optionPart: confusionMatrix
-          - name: reporting_classifMetrices
-            type: CheckBox
-            optionName: reporting
-            optionPart: classifMetrices
-          - name: reporting_AUC
-            type: CheckBox
-            optionName: reporting
-            optionPart: AUC
+          - type: Label
+            label: Reporting
+            stretchFactor: 1
+            cell:
+              column: 1
+              row: 0
+            children:
+              - name: reporting_confusionMatrix
+                type: CheckBox
+                optionName: reporting
+                optionPart: confusionMatrix
+              - name: reporting_classifMetrices
+                type: CheckBox
+                optionName: reporting
+                optionPart: classifMetrices
+              - name: reporting_AUC
+                type: CheckBox
+                optionName: reporting
+                optionPart: AUC
   - type: Label
     label: Classifier
     children:
       - name: classifier_singleDecisionTree
         type: RadioButton
         optionName: classifier
-        optionPart: simpleDecisionTree
+        optionPart: singleDecisionTree
       - name: classifier_randomForest
         type: RadioButton
         optionName: classifier
@@ -124,3 +145,34 @@ children:
             name: plotDecisionTree
           - type: CheckBox
             name: predictedFreq
+  - type: CollapseBox
+    label: Random forest
+    stretchFactor: 1
+    children:
+      - type: LayoutBox
+        style: inline
+        children:
+          - type: LayoutBox
+            margin: large
+            children:
+              - type: TextBox
+                name: noOfTrees
+                format: number
+              - type: TextBox
+                name: maxDepthRandFor
+                format: number
+          - type: LayoutBox
+            margin: large
+            children:
+              - type: TextBox
+                name: sampleFraction
+                format: number
+              - type: ComboBox
+                name: splitRule
+      - type: LayoutBox
+        margin: large
+        children:
+          - type: CheckBox
+            name: printRandForest
+          - type: CheckBox
+            name: predictedFreqRF

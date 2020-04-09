@@ -10,6 +10,7 @@ classificationClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         },
 
         .run = function() {
+            library('mlr3')
             preformatted <- self$results$get('preformatted')
 
             # self$options$reporting <- 'classifMetrices'
@@ -21,18 +22,73 @@ classificationClass <- if (requireNamespace('jmvcore')) R6::R6Class(
 
             task <- TaskClassif$new(id = "task", backend = data[complete.cases(data),], target = self$options$dep)
 
-            learner <- lrn("classif.rpart",
-                           predict_type = 'prob',
-                           minsplit = self$options$minSplit,
-                           maxcompete = self$options$maxCompete,
-                           maxsurrogate = self$options$maxSurrogate,
-                           maxdepth = self$options$maxDepth,
-                           cp = self$options$complecity)
+            classifier <- ifelse(self$options$classifier == 'singleDecisionTree', 'classif.rpart', 'classif.ranger')
 
-            predictions <- private$.trainModel(task, learner)
+            if(self$options$classifier == 'singleDecisionTree'){
+                classifierType <- 'classif.rpart'
+                options <- list(
+                       minsplit = self$options$minSplit,
+                       maxcompete = self$options$maxCompete,
+                       maxsurrogate = self$options$maxSurrogate,
+                       maxdepth = self$options$maxDepth,
+                       cp = self$options$complecity
+                )
+            } else {
+                classifierType <- 'classif.ranger'
+                options <- list(
+                            num.trees = self$options$noOfTrees,
+                            splitrule = self$options$splitRule,
+                            sample.fraction = self$options$sampleFraction,
+                            min.node.size = self$options$maxDepth
+                )
+            }
+
+            learner <- lrn(classifierType, predict_type = 'prob')
+            learner$param_set$values <- options
+
+            private$.trainModel(task, learner)
+
+
+        },
+        .printModelParameters = function(parameters) {
+            singleTreeOptions <- c(
+                "type" = "single decision tree",
+                "min. split " = self$options$minSplit,
+                "min. bucket" = self$options$minBucket,
+                "complecity" = self$options$complecity,
+                "max. compete" = self$options$maxCompete,
+                "max. surrogate" = self$options$maxSurrogate,
+                "unsurrogate" = self$options$unsurrogate,
+                "max depth" = self$options$maxDepth,
+                "no. cross validations" = self$options$noCrossValidations
+            )
+
+            randomForestOptions <- c(
+                "type" =  "random forest",
+                "no. of trees" = self$options$noOfTrees,
+                "max depth" = self$options$maxDepth,
+                "sample fraction" = self$options$sampleFraction,
+                "split rule" = self$options$splitRule
+            )
+
+            if(self$options$classifier == "singleDecisionTree"){
+                selectedClassifier <- singleTreeOptions
+            }
+            else {
+                selectedClassifier <- randomForestOptions
+            }
+
+            settings <- "Decision tree with "
+            for (option in names(selectedClassifier)) {
+                sep <- ifelse(option != rev(names(selectedClassifier))[1], ',', '.')
+                settings <- paste0('<i>',settings, option, ' = ', selectedClassifier[option], sep ,'</i> ')
+            }
+
+            self$results$modelSettings$setContent(settings)
         },
 
         .trainModel = function(task, learner) {
+            private$.printModelParameters(learner$param_set)
             if (self$options$testing == "split" | self$options$testing == "trainSet") {
                 predictions <- private$.trainTestSplit(task, learner)
                 private$.setOutput(predictions, predictions, learner$model)
@@ -44,11 +100,27 @@ classificationClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             predictions
         },
 
+        .printRandomForestModel = function(model) {
+            table <- self$results$printRandForest$randomForestModel
+
+            table$setVisible(TRUE)
+            table$setRow(rowNo = 1, values = list(type = 'No. of trees', classif = model$forest$num.trees))
+            table$setRow(rowNo = 2, values = list(type = 'Sample size', classif = model$num.samples))
+            table$setRow(rowNo = 3, values = list(type = 'Number of indep. variables', classif = model$num.independent.variables))
+            table$setRow(rowNo = 4, values = list(type = 'Mtyri', classif = model$mtry))
+            table$setRow(rowNo = 5, values = list(type = 'Target node size', classif = model$min.node.size))
+            table$setRow(rowNo = 6, values = list(type = 'Variable importance mode', classif = model$importance.mode))
+            table$setRow(rowNo = 7, values = list(type = 'Split rule', classif = model$splitrule))
+            table$setRow(rowNo = 8, values = list(type = 'OOB prediction error', classif = model$prediction.error))
+
+        },
+
         .setOutput = function(predictions, plotData, model) {
             levels <- levels(predictions$truth)
             reporting <- self$options$reporting
             freqPlot <- self$results$predictedFreqPlot
             treePlot <- self$results$decisionTreeModel
+            classifier <- self$options$classifier
 
             if (any(reporting == 'confusionMatrix')) {
                 private$.showConfusionMatrix(predictions$confusion)
@@ -74,15 +146,20 @@ classificationClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 private$.showClassificationMetrices(predictions, scores)
             }
 
-            if (self$options$predictedFreq == TRUE) {
+            if (self$options$predictedFreq == TRUE | self$options$predictedFreqRF == TRUE) {
                 freqPlot$setVisible(TRUE)
                 freqPlot$setState(plotData)
             }
 
-            if (self$options$plotDecisionTree == TRUE) {
+            if (self$options$plotDecisionTree == TRUE & classifier == 'singleDecisionTree') {
                 treePlot$setVisible(TRUE)
                 treePlot$setState(model)
             }
+
+            if(self$options$printRandForest == TRUE & classifier == 'randomForest') {
+                private$.printRandomForestModel(model)
+            }
+
         },
 
         .crossValidate = function(task, learner) {
@@ -178,17 +255,29 @@ classificationClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         },
 
         .calculateScores = function(predictions, outputScores) {
-            # classScores <- list()
+            preformatted <- self$results$get('preformatted')
             macros <- numeric(0)
             levels <- levels(predictions$truth)
 
             binaryPredictions <- sapply(levels, USE.NAMES = TRUE, function(level) private$.convertToBinary(level, predictions))
-            classScores <- lapply(levels, function(level) binaryPredictions[[level]]$score(msrs(outputScores)))
+
+            classScores <- lapply(levels, function(level) {
+                prob <- as.data.table(binaryPredictions[[level]])[[paste('prob', level, sep = '.')]]
+
+                c(
+                    'classif.recall' = recall(binaryPredictions[[level]]$truth, binaryPredictions[[level]]$response, positive = level),
+                    'classif.precision' = precision(binaryPredictions[[level]]$truth, binaryPredictions[[level]]$response, positive = level),
+                    'classif.fbeta' = fbeta(binaryPredictions[[level]]$truth, binaryPredictions[[level]]$response, positive = level),
+                    'classif.auc' = auc(binaryPredictions[[level]]$truth, prob = prob, positive = level)
+                )
+            })
+
             names(classScores) <- levels
+            classScores <- lapply(classScores, round , 3)
 
             #calculate macro scores
             for (scoreName in outputScores) {
-                macros[scoreName] <- mean(sapply(levels, function(class) classScores[[class]][[scoreName]]))
+                macros[scoreName] <- mean(sapply(levels, function(class) classScores[[class]][scoreName]))
             }
 
             list(

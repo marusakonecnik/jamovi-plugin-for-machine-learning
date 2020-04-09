@@ -4,9 +4,10 @@ title: Decision tree
 jrs:   '1.1'
 
 items:
-  - name:  text
-    title: ''
-    type:  Preformatted
+
+  - name: modelSettings
+    title: Model parameters
+    type: Html
 
   - name: confusion
     title: Confusion matric
@@ -72,14 +73,6 @@ items:
     height: 300
     renderFun: .rocCurve
 
-  - name: predictedFreqPlot
-    title: Predicted frequencies
-    visible: FALSE
-    type: Image
-    width:  400
-    height: 300
-    renderFun: .frequenciesPlot
-
   - name: decisionTreeModel
     title: Decision tree model
     visible: FALSE
@@ -88,4 +81,34 @@ items:
     height: 300
     renderFun: .printDecisionTree
 
+  - name: predictedFreqPlot
+    title: Predicted frequencies
+    visible: FALSE
+    type: Image
+    width:  350
+    height: 450
+    renderFun: .frequenciesPlot
+
+
+  - name: printRandForest
+    type: Group
+    title: Random forest model
+    items:
+      - name: randomForestModel
+        title: ''
+        visible: FALSE
+        type: Table
+        rows: 8
+        columns:
+          - name: type
+            title: 'Type'
+            type: Text
+          - name: classif
+            title: 'Classification'
+            type: Number
+
+
+  - name:  text
+    title: ''
+    type:  Preformatted
 ...

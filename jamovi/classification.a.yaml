@@ -65,7 +65,7 @@ options:
       title: Classifier
       type: List
       options:
-        - name: simpleDecisionTree
+        - name: singleDecisionTree
           title: Single decision tree
         - name: randomForest
           title: Random forest
@@ -110,6 +110,32 @@ options:
       type: Number
       default: 30
 
+    - name: noOfTrees
+      title: No. of trees
+      type: Number
+      default: 10
+
+    - name: maxDepthRandFor
+      title: Max depth
+      type: Number
+      default: 30
+
+    - name: sampleFraction
+      title: Sample fraction
+      type: Number
+      default: 1.0
+
+    - name: splitRule
+      type: List
+      title: Reporting
+      options:
+        - name: gini
+          title: Gini
+        - name: extratrees
+          title: Extra trees
+        - name: hellinger
+          title: Hellinger
+
     - name: plotDecisionTree
       title: Plot decision tree
       type: Bool
@@ -117,6 +143,16 @@ options:
 
     - name: predictedFreq
       title: Predicted frequencies
+      type: Bool
+      default: false
+
+    - name: printRandForest
+      title: Print model
+      type: Bool
+      default: false
+
+    - name: predictedFreqRF
+      title: Predicted freuencies
       type: Bool
       default: false
 

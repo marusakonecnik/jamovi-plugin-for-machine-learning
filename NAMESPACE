@@ -2,4 +2,5 @@ exportPattern("^[[:alpha:]]+")
 import(mlr3)
 import(mlr3measures)
 import(ggplot2)
+import(mlr3learners)
 
