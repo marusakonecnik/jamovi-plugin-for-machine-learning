@@ -106,7 +106,7 @@ options:
       default: 10
 
     - name: maxDepth
-      title: Max depth
+      title: Max. depth
       type: Number
       default: 30
 
@@ -116,7 +116,7 @@ options:
       default: 10
 
     - name: maxDepthRandFor
-      title: Max depth
+      title: Max. depth
       type: Number
       default: 30
 
@@ -127,7 +127,7 @@ options:
 
     - name: splitRule
       type: List
-      title: Reporting
+      title: Split rule
       options:
         - name: gini
           title: Gini
@@ -152,8 +152,10 @@ options:
       default: false
 
     - name: predictedFreqRF
-      title: Predicted freuencies
+      title: Predicted frequencies
       type: Bool
       default: false
+
+
 
 ...
