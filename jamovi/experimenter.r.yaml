@@ -8,4 +8,15 @@ items:
       title: Experimenter
       type:  Preformatted
 
+    - name: overallMetrics
+      title: Overall metrics
+      type: Array
+      description: an array of overall metrics for chosen algorithms
+      items: (classifiersToUse)
+
+      template:
+        title: ""
+        type: Table
+        columns: []
+
 ...

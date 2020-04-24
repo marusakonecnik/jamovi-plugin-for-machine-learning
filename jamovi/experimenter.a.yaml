@@ -12,25 +12,71 @@ options:
     - name: dep
       title: Dependent Variable
       type: Variable
+      suggested:
+        - nominal
+      permitted:
+        - factor
 
-    - name: group
-      title: Grouping Variable
-      type: Variable
+    - name: indep
+      title: Independent Variables
+      type: Variables
+      suggested:
+        - nominal
+        - continuous
+      permitted:
+        - factor
+        - numeric
 
-    - name: alt
-      title: Alternative hypothesis
+    - name: testSize
+      title:  Testing perc.
+      type: Number
+      default: 0.33
+
+    - name: noOfFolds
+      title:  No. of folds
+      type: Number
+      default: 10
+
+    - name: testing
+      title: Testing
       type: List
       options:
-        - title: Not equal
-          name:  notequal
-        - title: One greater
-          name:  onegreater
-        - title: Two greater
-          name:  twogreater
-      default: notequal
+        - name: trainSet
+          title: Train set
+        - name: split
+          title: Train/test split
+        - name: crossValidation
+          title: Cross-validation
 
-    - name: varEq
-      title: Assume equal variances
-      type: Bool
-      default: true
+    - name: reporting
+      type: NMXList
+      title: Reporting
+      options:
+        - name: classifMetrices
+          title: Classification metrics
+        - name: perClass
+          title: Per class metrics
+        - name: AUC
+          title: AUC
+        - name: plotMetricComparison
+          title: Plot metric comparison
+      default:
+          - classifMetrices
+
+    - name: classifiersToUse
+      type: Terms
+
+    - name: classifierSettings
+      title: Settings
+      type: String
+
+
+
+
+
+
+
+
+
+
 ...

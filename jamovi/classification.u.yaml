@@ -94,70 +94,67 @@ children:
         type: RadioButton
         optionName: classifier
         optionPart: singleDecisionTree
-
       - name: classifier_randomForest
         type: RadioButton
         optionName: classifier
         optionPart: randomForest
-
   - type: CollapseBox
     label: Single decision tree
     collapsed: true
     stretchFactor: 1
     children:
-    - type: LayoutBox
-      style: inline
-      children:
-        - type: LayoutBox
-          style: list
-          margin: large
-          children:
-            - type: TextBox
-              name: minSplit
-              enable: (classifier_singleDecisionTree)
-              format: number
-            - type: TextBox
-              name: minBucket
-              format: number
-              enable: (classifier_singleDecisionTree)
-            - type: TextBox
-              name: complecity
-              format: number
-              enable: (classifier_singleDecisionTree)
-            - type: TextBox
-              name: maxCompete
-              format: number
-              enable: (classifier_singleDecisionTree)
-        - type: LayoutBox
-          margin: large
-          style: list
-          children:
-            - type: TextBox
-              name: maxSurrogate
-              format: number
-              enable: (classifier_singleDecisionTree)
-            - type: TextBox
-              name: unsurrogate
-              format: number
-              enable: (classifier_singleDecisionTree)
-            - type: TextBox
-              name: noCrossValidations
-              format: number
-              enable: (classifier_singleDecisionTree)
-            - type: TextBox
-              name: maxDepth
-              format: number
-              enable: (classifier_singleDecisionTree)
-    - type: LayoutBox
-      margin: large
-      children:
-        - type: CheckBox
-          name: plotDecisionTree
-          enable: (classifier_singleDecisionTree)
-        - type: CheckBox
-          name: predictedFreq
-          enable: (classifier_singleDecisionTree)
-
+      - type: LayoutBox
+        style: inline
+        children:
+          - type: LayoutBox
+            style: list
+            margin: large
+            children:
+              - type: TextBox
+                name: minSplit
+                enable: (classifier_singleDecisionTree)
+                format: number
+              - type: TextBox
+                name: minBucket
+                format: number
+                enable: (classifier_singleDecisionTree)
+              - type: TextBox
+                name: complecity
+                format: number
+                enable: (classifier_singleDecisionTree)
+              - type: TextBox
+                name: maxCompete
+                format: number
+                enable: (classifier_singleDecisionTree)
+          - type: LayoutBox
+            margin: large
+            style: list
+            children:
+              - type: TextBox
+                name: maxSurrogate
+                format: number
+                enable: (classifier_singleDecisionTree)
+              - type: TextBox
+                name: unsurrogate
+                format: number
+                enable: (classifier_singleDecisionTree)
+              - type: TextBox
+                name: noCrossValidations
+                format: number
+                enable: (classifier_singleDecisionTree)
+              - type: TextBox
+                name: maxDepth
+                format: number
+                enable: (classifier_singleDecisionTree)
+      - type: LayoutBox
+        margin: large
+        children:
+          - type: CheckBox
+            name: plotDecisionTree
+            enable: (classifier_singleDecisionTree)
+          - type: CheckBox
+            name: predictedFreq
+            enable: (classifier_singleDecisionTree)
   - type: CollapseBox
     label: Random forest
     stretchFactor: 1

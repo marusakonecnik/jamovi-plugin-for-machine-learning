@@ -13,7 +13,6 @@ classificationClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             library('mlr3')
             preformatted <- self$results$get('preformatted')
 
-            # self$options$reporting <- 'classifMetrices'
             if (length(self$options$dep) == 0 ||
                 length(self$options$indep) == 0)
                 return()

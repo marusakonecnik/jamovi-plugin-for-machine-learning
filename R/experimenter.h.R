@@ -7,9 +7,14 @@ experimenterOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
     public = list(
         initialize = function(
             dep = NULL,
-            group = NULL,
-            alt = "notequal",
-            varEq = TRUE, ...) {
+            indep = NULL,
+            testSize = 0.33,
+            noOfFolds = 10,
+            testing = NULL,
+            reporting = list(
+                "classifMetrices"),
+            classifiersToUse = NULL,
+            classifierSettings = NULL, ...) {
 
             super$initialize(
                 package='MachineLearning',
@@ -19,44 +24,86 @@ experimenterOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
 
             private$..dep <- jmvcore::OptionVariable$new(
                 "dep",
-                dep)
-            private$..group <- jmvcore::OptionVariable$new(
-                "group",
-                group)
-            private$..alt <- jmvcore::OptionList$new(
-                "alt",
-                alt,
+                dep,
+                suggested=list(
+                    "nominal"),
+                permitted=list(
+                    "factor"))
+            private$..indep <- jmvcore::OptionVariables$new(
+                "indep",
+                indep,
+                suggested=list(
+                    "nominal",
+                    "continuous"),
+                permitted=list(
+                    "factor",
+                    "numeric"))
+            private$..testSize <- jmvcore::OptionNumber$new(
+                "testSize",
+                testSize,
+                default=0.33)
+            private$..noOfFolds <- jmvcore::OptionNumber$new(
+                "noOfFolds",
+                noOfFolds,
+                default=10)
+            private$..testing <- jmvcore::OptionList$new(
+                "testing",
+                testing,
                 options=list(
-                    "notequal",
-                    "onegreater",
-                    "twogreater"),
-                default="notequal")
-            private$..varEq <- jmvcore::OptionBool$new(
-                "varEq",
-                varEq,
-                default=TRUE)
+                    "trainSet",
+                    "split",
+                    "crossValidation"))
+            private$..reporting <- jmvcore::OptionNMXList$new(
+                "reporting",
+                reporting,
+                options=list(
+                    "classifMetrices",
+                    "perClass",
+                    "AUC",
+                    "plotMetricComparison"),
+                default=list(
+                    "classifMetrices"))
+            private$..classifiersToUse <- jmvcore::OptionTerms$new(
+                "classifiersToUse",
+                classifiersToUse)
+            private$..classifierSettings <- jmvcore::OptionString$new(
+                "classifierSettings",
+                classifierSettings)
 
             self$.addOption(private$..dep)
-            self$.addOption(private$..group)
-            self$.addOption(private$..alt)
-            self$.addOption(private$..varEq)
+            self$.addOption(private$..indep)
+            self$.addOption(private$..testSize)
+            self$.addOption(private$..noOfFolds)
+            self$.addOption(private$..testing)
+            self$.addOption(private$..reporting)
+            self$.addOption(private$..classifiersToUse)
+            self$.addOption(private$..classifierSettings)
         }),
     active = list(
         dep = function() private$..dep$value,
-        group = function() private$..group$value,
-        alt = function() private$..alt$value,
-        varEq = function() private$..varEq$value),
+        indep = function() private$..indep$value,
+        testSize = function() private$..testSize$value,
+        noOfFolds = function() private$..noOfFolds$value,
+        testing = function() private$..testing$value,
+        reporting = function() private$..reporting$value,
+        classifiersToUse = function() private$..classifiersToUse$value,
+        classifierSettings = function() private$..classifierSettings$value),
     private = list(
         ..dep = NA,
-        ..group = NA,
-        ..alt = NA,
-        ..varEq = NA)
+        ..indep = NA,
+        ..testSize = NA,
+        ..noOfFolds = NA,
+        ..testing = NA,
+        ..reporting = NA,
+        ..classifiersToUse = NA,
+        ..classifierSettings = NA)
 )
 
 experimenterResults <- if (requireNamespace('jmvcore')) R6::R6Class(
     inherit = jmvcore::Group,
     active = list(
-        text = function() private$.items[["text"]]),
+        text = function() private$.items[["text"]],
+        overallMetrics = function() private$.items[["overallMetrics"]]),
     private = list(),
     public=list(
         initialize=function(options) {
@@ -67,7 +114,16 @@ experimenterResults <- if (requireNamespace('jmvcore')) R6::R6Class(
             self$add(jmvcore::Preformatted$new(
                 options=options,
                 name="text",
-                title="Experimenter"))}))
+                title="Experimenter"))
+            self$add(jmvcore::Array$new(
+                options=options,
+                name="overallMetrics",
+                title="Overall metrics",
+                items="(classifiersToUse)",
+                template=jmvcore::Table$new(
+                    options=options,
+                    title="",
+                    columns=list())))}))
 
 experimenterBase <- if (requireNamespace('jmvcore')) R6::R6Class(
     "experimenterBase",
@@ -93,39 +149,55 @@ experimenterBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' 
 #' @param data .
 #' @param dep .
-#' @param group .
-#' @param alt .
-#' @param varEq .
+#' @param indep .
+#' @param testSize .
+#' @param noOfFolds .
+#' @param testing .
+#' @param reporting .
+#' @param classifiersToUse .
+#' @param classifierSettings .
 #' @return A results object containing:
 #' \tabular{llllll}{
 #'   \code{results$text} \tab \tab \tab \tab \tab a preformatted \cr
+#'   \code{results$overallMetrics} \tab \tab \tab \tab \tab an array of overall metrics for chosen algorithms \cr
 #' }
 #'
 #' @export
 experimenter <- function(
     data,
     dep,
-    group,
-    alt = "notequal",
-    varEq = TRUE) {
+    indep,
+    testSize = 0.33,
+    noOfFolds = 10,
+    testing,
+    reporting = list(
+                "classifMetrices"),
+    classifiersToUse,
+    classifierSettings) {
 
     if ( ! requireNamespace('jmvcore'))
         stop('experimenter requires jmvcore to be installed (restart may be required)')
 
     if ( ! missing(dep)) dep <- jmvcore::resolveQuo(jmvcore::enquo(dep))
-    if ( ! missing(group)) group <- jmvcore::resolveQuo(jmvcore::enquo(group))
+    if ( ! missing(indep)) indep <- jmvcore::resolveQuo(jmvcore::enquo(indep))
     if (missing(data))
         data <- jmvcore::marshalData(
             parent.frame(),
             `if`( ! missing(dep), dep, NULL),
-            `if`( ! missing(group), group, NULL))
+            `if`( ! missing(indep), indep, NULL))
 
+    for (v in dep) if (v %in% names(data)) data[[v]] <- as.factor(data[[v]])
+    if (inherits(classifiersToUse, 'formula')) classifiersToUse <- jmvcore::decomposeFormula(classifiersToUse)
 
     options <- experimenterOptions$new(
         dep = dep,
-        group = group,
-        alt = alt,
-        varEq = varEq)
+        indep = indep,
+        testSize = testSize,
+        noOfFolds = noOfFolds,
+        testing = testing,
+        reporting = reporting,
+        classifiersToUse = classifiersToUse,
+        classifierSettings = classifierSettings)
 
     analysis <- experimenterClass$new(
         options = options,
