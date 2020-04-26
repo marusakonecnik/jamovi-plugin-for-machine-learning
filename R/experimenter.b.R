@@ -13,6 +13,7 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         .run = function() {
             library(mlr3)
             preformatted <- self$results$get('preformatted')
+            warning("error message")
 
             if (length(self$options$dep) == 0 || length(self$options$indep) == 0)
                 return()
@@ -26,6 +27,15 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         },
         .initOverallMetrics = function() {
             # preformatted <- self$results$get('preformatted')
+            overallMetrics <- c(
+                classif.acc = 'Accuracy',
+                classif.bacc = 'Balanced accuracy',
+                classif.ce = 'Error rate',
+                classif.recall = 'Macro recall',
+                classif.precision = 'Macro precision',
+                classif.fbeta = 'Macro F-score',
+                classif.auc = 'Macro AUC'
+            )
 
             classifiers <- self$options$classifiersToUse
             tables <- self$results$overallMetrics
@@ -35,8 +45,11 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
 
                 table$setTitle(classifier)
 
-                table$addColumn(name = 'metric', title = 'Metric', type = 'text')
-                table$addColumn(name = 'value', title = 'Value', type = 'number')
+                # table$addColumn(name = rowName, title = "", type = 'text', content = "Metric")
+
+                for(metric in names(overallMetrics)) {
+                     table$addColumn(name = metric, title = overallMetrics[metric], type = 'number')
+                }
             }
         },
 
@@ -66,10 +79,13 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 table <- tables$get(key = classifier)
 
                 settings <- regmatches(classifier, gregexpr("\\(.+?\\)", classifier))
-                 preformatted$content <- settings
 
-                if(!identical(settings, character(0))) {
-                    settings <- private$.getOptions(substr(settings, 2, nchar(settings)-1))
+                if(!identical(settings[[1]], character(0))) {
+                    classifierOptions <- substr(settings, 2, nchar(settings)-1)
+
+                    if(private$.isSettingsValid(classifierOptions)) {
+                        settings <- private$.getOptions(classifierOptions)
+                    }
                 }
 
                 learner <- private$.initLearner(classifier, settings)
@@ -79,12 +95,38 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 scores <- private$.calculateScores(predictions, scoreNames)
                 general <- scores[['general']]
 
-                lapply(names(general), function(scoreName) table$addRow(rowKey = scoreName, values = list(metric = metricesDict[scoreName], value = general[[scoreName]])))
+                row <- as.list(sapply(names(general), function(name) general[[name]], USE.NAMES = TRUE ))
+
+                table$addRow(rowKey = "metric", values = row)
             }
         },
 
-        .getOptions = function(settings) {
+        .isSettingsValid = function(settings) {
+            errors <- list(
+                missingComma = "Settings input not valid. Did you forget to put ',' between options? Example of a valid input: k = 3, distance = 2",
+                missingEquals = "Settings input not valid. Did you forget to put '=' when assigning value to an option? Example of a valid input: k = 3, distance = 2",
+                unknown = "Settings input not valid. Please check again if your input is as requested. Example of a valid input: k = 3, distance = 2"
+            )
 
+            settingsValid <- regmatches(settings, regexpr("^(\\w+ ?= ?\\w+(, ?|$))+$", settings))
+
+            equalsCount <- stringr::str_count(settings, "=") # number of equals in user input settings
+            commasCount <- stringr::str_count(settings, ",") # number of commas in user input settings
+
+            if(identical(settingsValid, character(0))) {
+                if (equalsCount > commasCount + 1) {
+                    stop(errors$missingComma)
+                } else if (commasCount + 1 > equalsCount) {
+                    stop(errors$missingEquals)
+                } else {
+                    stop(errors$unknown)
+                }
+            }
+
+            return (TRUE)
+        },
+
+        .getOptions = function(settings) {
           settings <- gsub("[[:space:]]", "", settings)
           splitted <- strsplit(settings, ',')[[1]]
           options <- list()
@@ -98,6 +140,10 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 optionValue <- as.numeric(optionValue)
             }
 
+            if(optionValue == "TRUE" || optionValue == "FALSE" || optionValue == 'true' || optionValue == 'false') {
+                optionValue <- as.logical(optionValue)
+            }
+
             options[[optionName]] <- optionValue
           }
 
@@ -105,6 +151,7 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         },
 
         .initLearner = function (classifier, options) {
+
             preformatted <- self$results$get('preformatted')
 
           if(grepl("KNN", classifier, fixed = TRUE)) {
@@ -119,24 +166,26 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
               learner <- lrn("classif.log_reg", predict_type = 'prob')
           }
 
-         if(!is.na(options)) {
+         if(!identical(options[[1]], character(0))) {
             learner$param_set$values <- options
-              preformatted$content <- learner$param_set
-
          }
+            preformatted$content <- options
+
+
          return(learner)
         },
 
         .trainModel = function(task, learner) {
             if (self$options$testing == "split" | self$options$testing == "trainSet") {
                 predictions <- private$.trainTestSplit(task, learner)
+                return (predictions)
                 # private$.setOutput(predictions, predictions, learner$model)
             } else {
                 predictions <- private$.crossValidate(task, learner)
+                return (predictions$prediction())
                 # private$.setOutput(predictions$prediction(), predictions, learner$model)
             }
 
-            predictions
         },
 
         .crossValidate = function(task, learner) {

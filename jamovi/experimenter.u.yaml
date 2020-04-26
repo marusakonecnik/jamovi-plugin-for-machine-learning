@@ -5,6 +5,8 @@ stage: 0
 compilerMode: tame
 events:
   update: './experimenter.events::update'
+  loaded: './experimenter.events::create'
+
 children:
   - type: VariableSupplier
     persistentItems: false
@@ -94,8 +96,9 @@ children:
                 optionName: reporting
                 optionPart: perClass
   - type: CollapseBox
+    name: classifierCollapseBox
     label: Classifiers
-    collapsed: true
+    collapsed: false
     stretchFactor: 1
     children:
       - type: Supplier
@@ -117,7 +120,6 @@ children:
                 isTarget: true
                 events:
                   listItemAdded: './experimenter.events::onChange_classifiersList'
-                  listItemRemoved: './experimenter.events::onRemove_classifiersList'
                 template:
                   type: TermLabel
       - type: LayoutBox
