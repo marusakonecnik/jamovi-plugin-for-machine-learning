@@ -8,7 +8,6 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         .init = function() {
             preformatted <- jmvcore::Preformatted$new(self$options, 'preformatted')
             self$results$add(preformatted)
-            private$.initOverallMetrics()
         },
         .run = function() {
             library(mlr3)
@@ -21,84 +20,94 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             data <- as.data.table(self$data)
 
             task <- TaskClassif$new(id = "task", backend = data[complete.cases(data), ], target = self$options$dep)
-
-            private$.populateOverallMetrics(task)
+            private$.setOutput(task)
 
         },
-        .initOverallMetrics = function() {
-            # preformatted <- self$results$get('preformatted')
-            overallMetrics <- c(
-                classif.acc = 'Accuracy',
-                classif.bacc = 'Balanced accuracy',
-                classif.ce = 'Error rate',
-                classif.recall = 'Macro recall',
-                classif.precision = 'Macro precision',
-                classif.fbeta = 'Macro F-score',
-                classif.auc = 'Macro AUC'
-            )
 
-            classifiers <- self$options$classifiersToUse
-            tables <- self$results$overallMetrics
-
-            for (classifier in classifiers) {
-                table <- tables$get(key = classifier)
-
-                table$setTitle(classifier)
-
-                # table$addColumn(name = rowName, title = "", type = 'text', content = "Metric")
-
-                for(metric in names(overallMetrics)) {
-                     table$addColumn(name = metric, title = overallMetrics[metric], type = 'number')
-                }
-            }
-        },
-
-        .populateOverallMetrics = function(task) {
-            preformatted <- self$results$get('preformatted')
+        .populateOverallMetrics = function(task, scoreNames) {
             classifiers <- self$options$classifiersToUse
 
 
             if(length(classifiers) == 0)
                 return();
 
-            tables <- self$results$overallMetrics
 
-            metricesDict <- c(
-                classif.acc = 'Accuracy',
-                classif.bacc = 'Balanced accuracy',
-                classif.ce = 'Error rate',
-                classif.recall = 'Macro recall',
-                classif.precision = 'Macro precision',
-                classif.fbeta = 'Macro F-score',
-                classif.auc = 'Macro AUC'
-            )
+            table <- self$results$overallMetrics$overallMetricsTable
 
-            scoreNames <- c("classif.precision", "classif.recall", "classif.fbeta")
+            preformatted <- self$results$get('preformatted')
+
+            for (classifier in classifiers) {
+                settings <- private$.getSettings(classifier)
+                predictions <- private$.getPredictions(task, classifier, settings)
+                scores <- private$.calculateScores(predictions, scoreNames)[['general']]
+
+                row <- as.list(sapply(names(scores), function(name) scores[[name]], USE.NAMES = TRUE ))
+                row[['classifier']] <- classifier
+
+                table$addRow(rowKey = classifier, values = row)
+            }
+        },
+
+        .populateRocCurvePlots = function(task) {
+            classifiers <- self$options$classifiersToUse
+            plots <- self$results$rocCurvePlots
+            levels <- levels(task$truth())
+
+            for (classifier in classifiers) {
+                plot <- plots$get(key = classifier)
+
+                settings <- private$.getSettings(classifier)
+                predictions <- private$.getPredictions(task, classifier, settings)
+
+                binaryPredictions <- sapply(levels, function(level) private$.convertToBinary(level, predictions), USE.NAMES = TRUE)
+
+                plot$setState(binaryPredictions)
+            }
+        },
+
+        .populatePerClassMetrics = function(task, scoreNames) {
+            classifiers <- self$options$classifiersToUse
+            tables <- self$results$perClassMetrics
+
+            levels <- levels(task$truth())
+
+            if(length(classifiers) == 0)
+                return();
 
             for (classifier in classifiers) {
                 table <- tables$get(key = classifier)
+                table$setVisible(TRUE)
 
-                settings <- regmatches(classifier, gregexpr("\\(.+?\\)", classifier))
+                settings <- private$.getSettings(classifier)
+                predictions <- private$.getPredictions(task, classifier, settings)
+                scores <- private$.calculateScores(predictions, scoreNames)[['class']]
 
-                if(!identical(settings[[1]], character(0))) {
-                    classifierOptions <- substr(settings, 2, nchar(settings)-1)
-
-                    if(private$.isSettingsValid(classifierOptions)) {
-                        settings <- private$.getOptions(classifierOptions)
-                    }
+                for(level in levels) {
+                   scores[[level]][['class']] <- level
+                   table$addRow(rowKey = level, values = scores[[level]])
                 }
 
-                learner <- private$.initLearner(classifier, settings)
-
-                predictions <- private$.trainModel(task, learner)
-
-                scores <- private$.calculateScores(predictions, scoreNames)
-                general <- scores[['general']]
-
-                row <- as.list(sapply(names(general), function(name) general[[name]], USE.NAMES = TRUE ))
-
-                table$addRow(rowKey = "metric", values = row)
             }
+        },
+
+        .getSettings = function(classifier) {
+            settings <- regmatches(classifier, gregexpr("\\(.+?\\)", classifier))
+
+            if(!identical(settings[[1]], character(0))) {
+                classifierOptions <- substr(settings, 2, nchar(settings)-1)
+
+                if(private$.isSettingsValid(classifierOptions)) {
+                    settings <- private$.getOptions(classifierOptions)
+                }
+            }
+            return (settings)
+        },
+
+        .getPredictions = function(task, classifier, settings) {
+            learner <- private$.initLearner(classifier, settings)
+            predictions <- private$.trainModel(task, learner)
+
+            return(predictions)
         },
 
         .isSettingsValid = function(settings) {
@@ -108,7 +117,7 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 unknown = "Settings input not valid. Please check again if your input is as requested. Example of a valid input: k = 3, distance = 2"
             )
 
-            settingsValid <- regmatches(settings, regexpr("^(\\w+ ?= ?\\w+(, ?|$))+$", settings))
+            settingsValid <- regmatches(settings, regexpr("^(\\S+ ?= ?\\S+(, ?|$))+$", settings))
 
             equalsCount <- stringr::str_count(settings, "=") # number of equals in user input settings
             commasCount <- stringr::str_count(settings, ",") # number of commas in user input settings
@@ -122,7 +131,6 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                     stop(errors$unknown)
                 }
             }
-
             return (TRUE)
         },
 
@@ -143,17 +151,12 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             if(optionValue == "TRUE" || optionValue == "FALSE" || optionValue == 'true' || optionValue == 'false') {
                 optionValue <- as.logical(optionValue)
             }
-
             options[[optionName]] <- optionValue
           }
-
-          options
+          return(options)
         },
 
         .initLearner = function (classifier, options) {
-
-            preformatted <- self$results$get('preformatted')
-
           if(grepl("KNN", classifier, fixed = TRUE)) {
               learner <- lrn("classif.kknn", predict_type = 'prob')
           } else if(grepl("Decision tree", classifier, fixed = TRUE)) {
@@ -169,8 +172,6 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
          if(!identical(options[[1]], character(0))) {
             learner$param_set$values <- options
          }
-            preformatted$content <- options
-
 
          return(learner)
         },
@@ -258,6 +259,57 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             )
 
             binaryPrediction
+        },
+
+        .setOutput = function(task) {
+            reporting <- self$options$reporting
+
+            scores <- vector()
+
+            if (any(reporting == 'AUC')) {
+                scores <- c(scores, "classif.auc")
+
+                private$.populateRocCurvePlots(task)
+            }
+
+            if (any(reporting == "classifMetrices") ) {
+                scores <- c(scores, "classif.precision", "classif.recall", "classif.fbeta")
+
+                private$.populateOverallMetrics(task, scores)
+            }
+
+            if (any(reporting == 'perClass')) {
+                scores <- c(scores, "classif.precision", "classif.recall", "classif.fbeta")
+
+                private$.populatePerClassMetrics(task, scores)
+            }
+
+            if (any(reporting == "plotMetricComparison")) {
+
+            }
+        },
+
+        .rocCurve = function(image,...) {
+            plotData <- image$state
+
+            plotList <- lapply(names(plotData), function(class) {
+                mlr3viz::autoplot(plotData[[class]], type = 'roc')
+            })
+
+            plot <- ggpubr::ggarrange(plotlist = plotList,
+                                      labels = names(plotData),
+                                      font.label = list(color = "black", face = "bold", family = NULL),
+                                      ncol = 3, nrow = ceiling(length(names(plotData)) / 3))
+
+            print(plot)
+        },
+
+        .plotMetricComparison = function(image, ...) {
+            plotData <- image$state
+
+
         }
+
+
     )
 )

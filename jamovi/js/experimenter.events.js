@@ -22,6 +22,7 @@ const events = {
         ui.classifiers.value().forEach(classifier => classifier.$el.click(function () {
             ui.classifierSettings.placeholder = classifier.value.raw;
         }));
+
     },
 
     onChange_classifiersList: function (ui) {
@@ -32,6 +33,8 @@ const events = {
         ui.classifiersToUse.getControls()[lastElementIndex].$label.removeClass('silky-list-item-value');
         ui.classifiersToUse.getControls()[lastElementIndex].setValue(`${classifierName} (${settings})`);
         ui.classifiersToUse._localData.pop();
+
+        document.getElementById('settings').value = "";
     },
 
     onUpdate_classifiersSupplier: function (ui) {

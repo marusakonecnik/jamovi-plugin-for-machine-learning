@@ -4,19 +4,99 @@ title: Experimenter
 jrs:   '1.1'
 
 items:
-    - name:  text
-      title: Experimenter
-      type:  Preformatted
-
-    - name: overallMetrics
-      title: Overall metrics
-      type: Array
-      description: an array of overall metrics for chosen algorithms
-      items: (classifiersToUse)
-
-      template:
-        title: ""
+  - name: overallMetrics
+    title: Classification metrics
+    type: Group
+    items:
+      - name: overallMetricsTable
+        title: Overall metrics
+        visible: (reporting:classifMetrices)
         type: Table
-        columns: []
+        columns:
+          - name: classifier
+            title: classifier
+            type: text
+          - name: classif.acc
+            title: 'Accuracy'
+            type: number
+          - name: classif.bacc
+            title: 'Balanced accuracy'
+            type: number
+          - name: classif.ce
+            title: 'Error rate'
+            type: number
+          - name: classif.recall
+            title: 'Macro recall'
+            type: number
+          - name: classif.precision
+            title: 'Macro precision'
+            type: number
+          - name: classif.fbeta
+            title: 'Macro F-score'
+            type: number
+          - name: classif.auc
+            title: 'Macro AUC'
+            type: number
+            visible: (reporting:AUC)
+
+  - name: perClassMetrics
+    title: Per class metrics
+    type: Array
+    description: an array of metrics for class for chosen algorithms
+    items: (classifiersToUse)
+
+    template:
+      title: ($key)
+      type: Table
+      visible: FALSE
+      columns:
+        - name: class
+          title: 'class name'
+          type: text
+          visible: (reporting:perClass)
+        - name: classif.precision
+          title: 'precision'
+          type: number
+          visible: (reporting:perClass)
+        - name: classif.recall
+          title: 'recall'
+          type: number
+          visible: (reporting:perClass)
+        - name: classif.fbeta
+          title: 'F-score'
+          type: number
+          visible: (reporting:perClass)
+        - name: classif.auc
+          title: 'AUC'
+          type: number
+          visible: (reporting:AUC)
+
+  - name: rocCurvePlots
+    title: Roc curve plots
+    type: Array
+    description: an array of roc curve plots for chosen algorithms
+    items: (classifiersToUse)
+
+    template:
+      title: ($key)
+      visible: (reporting:AUC)
+      type: Image
+      width:  600
+      height: 300
+      renderFun: .rocCurve
+
+  - name: metricComparisonPlot
+    title: Metric comparison
+    visible: (reporting:plotMetricComparison)
+    type: Image
+    width:  1000
+    height: 200
+    renderFun: .plotMetricComparison
+    description: plot for comparison of results of chosen algorithms
+
+
+
+  - name:  text
+    type:  Preformatted
 
 ...

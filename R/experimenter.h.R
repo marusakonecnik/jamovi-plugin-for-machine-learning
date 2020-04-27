@@ -102,8 +102,11 @@ experimenterOptions <- if (requireNamespace('jmvcore')) R6::R6Class(
 experimenterResults <- if (requireNamespace('jmvcore')) R6::R6Class(
     inherit = jmvcore::Group,
     active = list(
-        text = function() private$.items[["text"]],
-        overallMetrics = function() private$.items[["overallMetrics"]]),
+        overallMetrics = function() private$.items[["overallMetrics"]],
+        perClassMetrics = function() private$.items[["perClassMetrics"]],
+        rocCurvePlots = function() private$.items[["rocCurvePlots"]],
+        metricComparisonPlot = function() private$.items[["metricComparisonPlot"]],
+        text = function() private$.items[["text"]]),
     private = list(),
     public=list(
         initialize=function(options) {
@@ -111,19 +114,114 @@ experimenterResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                 options=options,
                 name="",
                 title="Experimenter")
-            self$add(jmvcore::Preformatted$new(
-                options=options,
-                name="text",
-                title="Experimenter"))
+            self$add(R6::R6Class(
+                inherit = jmvcore::Group,
+                active = list(
+                    overallMetricsTable = function() private$.items[["overallMetricsTable"]]),
+                private = list(),
+                public=list(
+                    initialize=function(options) {
+                        super$initialize(
+                            options=options,
+                            name="overallMetrics",
+                            title="Classification metrics")
+                        self$add(jmvcore::Table$new(
+                            options=options,
+                            name="overallMetricsTable",
+                            title="Overall metrics",
+                            visible="(reporting:classifMetrices)",
+                            columns=list(
+                                list(
+                                    `name`="classifier", 
+                                    `title`="classifier", 
+                                    `type`="text"),
+                                list(
+                                    `name`="classif.acc", 
+                                    `title`="Accuracy", 
+                                    `type`="number"),
+                                list(
+                                    `name`="classif.bacc", 
+                                    `title`="Balanced accuracy", 
+                                    `type`="number"),
+                                list(
+                                    `name`="classif.ce", 
+                                    `title`="Error rate", 
+                                    `type`="number"),
+                                list(
+                                    `name`="classif.recall", 
+                                    `title`="Macro recall", 
+                                    `type`="number"),
+                                list(
+                                    `name`="classif.precision", 
+                                    `title`="Macro precision", 
+                                    `type`="number"),
+                                list(
+                                    `name`="classif.fbeta", 
+                                    `title`="Macro F-score", 
+                                    `type`="number"),
+                                list(
+                                    `name`="classif.auc", 
+                                    `title`="Macro AUC", 
+                                    `type`="number", 
+                                    `visible`="(reporting:AUC)"))))}))$new(options=options))
             self$add(jmvcore::Array$new(
                 options=options,
-                name="overallMetrics",
-                title="Overall metrics",
+                name="perClassMetrics",
+                title="Per class metrics",
                 items="(classifiersToUse)",
                 template=jmvcore::Table$new(
                     options=options,
-                    title="",
-                    columns=list())))}))
+                    title="($key)",
+                    visible=FALSE,
+                    columns=list(
+                        list(
+                            `name`="class", 
+                            `title`="class name", 
+                            `type`="text", 
+                            `visible`="(reporting:perClass)"),
+                        list(
+                            `name`="classif.precision", 
+                            `title`="precision", 
+                            `type`="number", 
+                            `visible`="(reporting:perClass)"),
+                        list(
+                            `name`="classif.recall", 
+                            `title`="recall", 
+                            `type`="number", 
+                            `visible`="(reporting:perClass)"),
+                        list(
+                            `name`="classif.fbeta", 
+                            `title`="F-score", 
+                            `type`="number", 
+                            `visible`="(reporting:perClass)"),
+                        list(
+                            `name`="classif.auc", 
+                            `title`="AUC", 
+                            `type`="number", 
+                            `visible`="(reporting:AUC)")))))
+            self$add(jmvcore::Array$new(
+                options=options,
+                name="rocCurvePlots",
+                title="Roc curve plots",
+                items="(classifiersToUse)",
+                template=jmvcore::Image$new(
+                    options=options,
+                    title="($key)",
+                    visible="(reporting:AUC)",
+                    width=600,
+                    height=300,
+                    renderFun=".rocCurve")))
+            self$add(jmvcore::Image$new(
+                options=options,
+                name="metricComparisonPlot",
+                title="Metric comparison",
+                visible="(reporting:plotMetricComparison)",
+                width=1000,
+                height=200,
+                renderFun=".plotMetricComparison"))
+            self$add(jmvcore::Preformatted$new(
+                options=options,
+                name="text"))}))
 
 experimenterBase <- if (requireNamespace('jmvcore')) R6::R6Class(
     "experimenterBase",
@@ -158,8 +256,11 @@ experimenterBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #' @param classifierSettings .
 #' @return A results object containing:
 #' \tabular{llllll}{
+#'   \code{results$overallMetrics$overallMetricsTable} \tab \tab \tab \tab \tab a table \cr
+#'   \code{results$perClassMetrics} \tab \tab \tab \tab \tab an array of metrics for class for chosen algorithms \cr
+#'   \code{results$rocCurvePlots} \tab \tab \tab \tab \tab an array of roc curve plots for chosen algorithms \cr
+#'   \code{results$metricComparisonPlot} \tab \tab \tab \tab \tab plot for comparison of results of chosen algorithms \cr
 #'   \code{results$text} \tab \tab \tab \tab \tab a preformatted \cr
-#'   \code{results$overallMetrics} \tab \tab \tab \tab \tab an array of overall metrics for chosen algorithms \cr
 #' }
 #'
 #' @export
