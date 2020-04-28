@@ -407,7 +407,7 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             })
 
             plot <- ggpubr::ggarrange(plotlist = plotList,
-                                      ncol = 1, nrow = ceiling(length(names(plotData)) / 3))
+                                      ncol = 1, nrow = 3)
 
             print(plot)
         }
