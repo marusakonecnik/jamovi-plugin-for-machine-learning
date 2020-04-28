@@ -12,7 +12,6 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         .run = function() {
             library(mlr3)
             preformatted <- self$results$get('preformatted')
-            warning("error message")
 
             if (length(self$options$dep) == 0 || length(self$options$indep) == 0)
                 return()
@@ -27,14 +26,10 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         .populateOverallMetrics = function(task, scoreNames) {
             classifiers <- self$options$classifiersToUse
 
-
             if(length(classifiers) == 0)
                 return();
 
-
             table <- self$results$overallMetrics$overallMetricsTable
-
-            preformatted <- self$results$get('preformatted')
 
             for (classifier in classifiers) {
                 settings <- private$.getSettings(classifier)
@@ -65,6 +60,78 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             }
         },
 
+        .getTableColumns = function(table) {
+            columnsToPlot <- table$columns[c(-1)]
+
+            columns <- lapply(columnsToPlot, function(column) {
+                ifelse(column$visible, column$title, NA)
+            })
+
+            return (columns[!is.na(columns)])
+        },
+
+        .populateMetricComparisonPlot = function(task) {
+            classifiers <- self$options$classifiersToUse
+            plot <- self$results$metricComparisonPlot
+
+            table <- self$results$overallMetrics$overallMetricsTable
+            columns <- private$.getTableColumns(table)
+
+            if(length(classifiers) == 0)
+                return();
+
+            plotData <- data.frame(
+                matrix(vector(), 0, 3,
+                dimnames=list(c(), c("metric", "classifier", "value")))
+            )
+
+            for (classifier in classifiers) {
+                settings <- private$.getSettings(classifier)
+                predictions <- private$.getPredictions(task, classifier, settings)
+                scores <- private$.calculateScores(predictions, names(columns))[['general']]
+
+                for (name in names(scores)) {
+                    plotData[nrow(plotData) + 1,] = c(columns[[name]], classifier, round(scores[[name]], 2))
+                }
+
+                plot$setState(plotData)
+            }
+        },
+
+        .populatePerClassComparisonPlot = function(task) {
+            classifiers <- self$options$classifiersToUse
+            plot <- self$results$perClassComparisonPlot
+
+            table <- self$results$overallMetrics$overallMetricsTable
+            columns <- private$.getTableColumns(table)
+
+            levels <- levels(task$truth())
+
+            if(length(classifiers) == 0)
+                return();
+
+
+          plotsData <- lapply(levels, function(level) {
+                    data.frame(matrix(vector(), 0, 3, dimnames=list(c(), c("metric", "classifier", "value"))))
+            })
+
+            names(plotsData) <- levels
+
+
+          for (classifier in classifiers) {
+            settings <- private$.getSettings(classifier)
+            predictions <- private$.getPredictions(task, classifier, settings)
+            scores <- private$.calculateScores(predictions, names(columns))[['class']]
+
+            for (name in names(scores)) {
+                for(score in names(scores[[name]])) {
+                     plotsData[[name]][nrow(plotsData[[name]]) + 1,] = c(score, classifier, scores[[name]][[score]])
+                }
+             }
+          }
+            plot$setState(plotsData)
+        },
+
         .populatePerClassMetrics = function(task, scoreNames) {
             classifiers <- self$options$classifiersToUse
             tables <- self$results$perClassMetrics
@@ -73,6 +140,7 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
 
             if(length(classifiers) == 0)
                 return();
+
 
             for (classifier in classifiers) {
                 table <- tables$get(key = classifier)
@@ -86,7 +154,6 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                    scores[[level]][['class']] <- level
                    table$addRow(rowKey = level, values = scores[[level]])
                 }
-
             }
         },
 
@@ -180,13 +247,10 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             if (self$options$testing == "split" | self$options$testing == "trainSet") {
                 predictions <- private$.trainTestSplit(task, learner)
                 return (predictions)
-                # private$.setOutput(predictions, predictions, learner$model)
             } else {
                 predictions <- private$.crossValidate(task, learner)
                 return (predictions$prediction())
-                # private$.setOutput(predictions$prediction(), predictions, learner$model)
             }
-
         },
 
         .crossValidate = function(task, learner) {
@@ -262,6 +326,7 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         },
 
         .setOutput = function(task) {
+            preformatted <- self$results$get('preformatted')
             reporting <- self$options$reporting
 
             scores <- vector()
@@ -284,7 +349,12 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 private$.populatePerClassMetrics(task, scores)
             }
 
-            if (any(reporting == "plotMetricComparison")) {
+            if (any(reporting == 'plotMetricComparison')) {
+                if(any(reporting == 'classifMetrices'))
+                    private$.populateMetricComparisonPlot(task)
+                if(any(reporting == 'perClass'))
+                    private$.populatePerClassComparisonPlot(task)
+
 
             }
         },
@@ -293,12 +363,12 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             plotData <- image$state
 
             plotList <- lapply(names(plotData), function(class) {
-                mlr3viz::autoplot(plotData[[class]], type = 'roc')
+                mlr3viz::autoplot(plotData[[class]], type = 'roc', title = 'lala')
             })
 
             plot <- ggpubr::ggarrange(plotlist = plotList,
                                       labels = names(plotData),
-                                      font.label = list(color = "black", face = "bold", family = NULL),
+                                      font.label = list(size = 14, color = "black", family = NULL),
                                       ncol = 3, nrow = ceiling(length(names(plotData)) / 3))
 
             print(plot)
@@ -307,7 +377,39 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         .plotMetricComparison = function(image, ...) {
             plotData <- image$state
 
+            plot <- ggplot(
+                data=plotData,
+                aes(x=metric,
+                    y=value,
+                    fill=classifier)) +
+                labs(title='Overall metrics') +
+                geom_bar(stat="identity",
+                         position = position_dodge()
+            )
 
+            print(plot)
+
+        },
+
+        .perClassMetricComparison = function(image, ...) {
+            plotData <- image$state
+
+            plotList <- lapply(names(plotData), function(class) {
+                ggplot(
+                data=plotData[[class]],
+                aes(x=metric,
+                    y=value,
+                    fill=classifier)) +
+                labs(title=class) +
+                geom_bar(stat="identity",
+                         position = position_dodge()
+            )
+            })
+
+            plot <- ggpubr::ggarrange(plotlist = plotList,
+                                      ncol = 1, nrow = ceiling(length(names(plotData)) / 3))
+
+            print(plot)
         }
 
 

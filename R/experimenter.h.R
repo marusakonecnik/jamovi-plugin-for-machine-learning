@@ -106,6 +106,7 @@ experimenterResults <- if (requireNamespace('jmvcore')) R6::R6Class(
         perClassMetrics = function() private$.items[["perClassMetrics"]],
         rocCurvePlots = function() private$.items[["rocCurvePlots"]],
         metricComparisonPlot = function() private$.items[["metricComparisonPlot"]],
+        perClassComparisonPlot = function() private$.items[["perClassComparisonPlot"]],
         text = function() private$.items[["text"]]),
     private = list(),
     public=list(
@@ -216,9 +217,17 @@ experimenterResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                 name="metricComparisonPlot",
                 title="Metric comparison",
                 visible="(reporting:plotMetricComparison)",
-                width=1000,
-                height=200,
+                width=700,
+                height=300,
                 renderFun=".plotMetricComparison"))
+            self$add(jmvcore::Image$new(
+                options=options,
+                name="perClassComparisonPlot",
+                title="Per class metric comparison",
+                visible="(reporting:plotMetricComparison)",
+                width=700,
+                height=1000,
+                renderFun=".perClassMetricComparison"))
             self$add(jmvcore::Preformatted$new(
                 options=options,
                 name="text"))}))
@@ -260,6 +269,7 @@ experimenterBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #'   \code{results$perClassMetrics} \tab \tab \tab \tab \tab an array of metrics for class for chosen algorithms \cr
 #'   \code{results$rocCurvePlots} \tab \tab \tab \tab \tab an array of roc curve plots for chosen algorithms \cr
 #'   \code{results$metricComparisonPlot} \tab \tab \tab \tab \tab plot for comparison of results of chosen algorithms \cr
+#'   \code{results$perClassComparisonPlot} \tab \tab \tab \tab \tab plot for comparison of results of specific class for chosen algorithms \cr
 #'   \code{results$text} \tab \tab \tab \tab \tab a preformatted \cr
 #' }
 #'
