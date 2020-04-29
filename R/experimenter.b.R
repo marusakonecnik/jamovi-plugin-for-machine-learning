@@ -1,6 +1,3 @@
-
-# This file is a generated template, your changes will not be overwritten
-
 experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
     "experimenterClass",
     inherit = experimenterBase,
@@ -10,54 +7,112 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             self$results$add(preformatted)
         },
         .run = function() {
-            library(mlr3)
-            preformatted <- self$results$get('preformatted')
+            library(mlr3) #can't use some mlr3 functions without this for some reason
 
             if (length(self$options$dep) == 0 || length(self$options$indep) == 0)
                 return()
 
             data <- as.data.table(self$data)
 
-            task <- TaskClassif$new(id = "task", backend = data[complete.cases(data), ], target = self$options$dep)
-            private$.setOutput(task)
+            task <- TaskClassif$new(id = "task", backend = data[complete.cases(data),], target = self$options$dep)
 
+            private$.setOutput(task)
         },
 
-        .populateOverallMetrics = function(task, scoreNames) {
-            classifiers <- self$options$classifiersToUse
-
-            if(length(classifiers) == 0)
-                return();
+        .populateOverallMetrics = function(classifier, predictions) {
+            if(length(self$options$classifiersToUse) == 0)
+                return()
 
             table <- self$results$overallMetrics$overallMetricsTable
             columns <- private$.getTableColumns(table)
 
-            for (classifier in classifiers) {
-                settings <- private$.getSettings(classifier)
-                predictions <- private$.getPredictions(task, classifier, settings)
-                scores <- private$.calculateScores(predictions, names(columns))[['general']]
+            scores <- private$.calculateScores(predictions, names(columns))[['general']]
 
-                row <- as.list(sapply(names(scores), function(name) scores[[name]], USE.NAMES = TRUE ))
-                row[['classifier']] <- classifier
+            row <- as.list(sapply(names(scores), function(name) scores[[name]], USE.NAMES = TRUE ))
+            row[['classifier']] <- classifier
 
-                table$addRow(rowKey = classifier, values = row)
+            table$addRow(rowKey = classifier, values = row)
+        },
+
+        .populatePerClassMetrics = function(classifier, predictions, levels) {
+            if(length(self$options$classifiersToUse) == 0)
+            return();
+
+            tables <- self$results$perClassMetrics
+            table <- tables$get(key = classifier)
+            table$setVisible(TRUE)
+
+            columns <- private$.getTableColumns(table)
+
+            scores <- private$.calculateScores(predictions, names(columns))[['class']]
+
+            for(level in levels) {
+               scores[[level]][['class']] <- level
+               table$addRow(rowKey = level, values = scores[[level]])
             }
         },
 
-        .populateRocCurvePlots = function(task) {
+        .populateRocCurvePlots = function(classifier, predictions, levels) {
+            if(length(self$options$classifiersToUse) == 0)
+                return()
+
+            plot <- self$results$rocCurvePlots$get(key = classifier)
+
+            binaryPredictions <- sapply(levels, function(level) private$.convertToBinary(level, predictions), USE.NAMES = TRUE)
+
+            plot$setState(binaryPredictions)
+        },
+
+        .populateMetricComparisonPlot = function(classifier, predictions, plotData) {
             classifiers <- self$options$classifiersToUse
-            plots <- self$results$rocCurvePlots
-            levels <- levels(task$truth())
+            if(length(classifiers) == 0)
+                return()
 
-            for (classifier in classifiers) {
-                plot <- plots$get(key = classifier)
+            table <- self$results$overallMetrics$overallMetricsTable
+            columns <- private$.getTableColumns(table)
 
-                settings <- private$.getSettings(classifier)
-                predictions <- private$.getPredictions(task, classifier, settings)
+            scores <- private$.calculateScores(predictions, names(columns))[['general']]
 
-                binaryPredictions <- sapply(levels, function(level) private$.convertToBinary(level, predictions), USE.NAMES = TRUE)
+            for (name in names(scores)) {
+                plotData[nrow(plotData) + 1,] = c(columns[[name]], classifier, round(scores[[name]], 2))
+            }
 
-                plot$setState(binaryPredictions)
+            if(classifier == classifiers[[length(classifiers)]]) {
+                plot <- self$results$metricComparison$metricComparisonPlot
+                plot$setState(plotData)
+                return()
+            }
+            else {
+                return (plotData)
+            }
+        },
+
+        .populatePerClassComparisonPlot = function(classifier, predictions, plotsData) {
+            classifiers <- self$options$classifiersToUse
+            if(length(classifiers) == 0)
+                return();
+
+            table <- self$results$perClassMetrics$get(key = classifiers[[1]])
+            columns <- private$.getTableColumns(table)
+
+            scores <- private$.calculateScores(predictions, names(columns))[['class']]
+
+            for (name in names(plotsData)) {
+                for(score in names(columns)) {
+                     insertIndex <- nrow(plotsData[[name]]) + 1
+                     scoreName <- columns[[score]]
+                     scoreValue <- scores[[name]][[score]]
+                     plotsData[[name]][insertIndex, ] <- c(scoreName, classifier, scoreValue)
+                }
+             }
+
+            if(classifier == classifiers[[length(classifiers)]]) {
+                plot <- self$results$metricComparison$perClassComparisonPlot
+                plot$setState(plotsData)
+                return()
+            }
+            else {
+                return (plotsData)
             }
         },
 
@@ -68,109 +123,20 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 ifelse(column$visible, column$title, NA)
             })
 
-            return (columns[!is.na(columns)])
-        },
-
-        .populateMetricComparisonPlot = function(task) {
-            classifiers <- self$options$classifiersToUse
-            plot <- self$results$metricComparison$metricComparisonPlot
-
-            table <- self$results$overallMetrics$overallMetricsTable
-            columns <- private$.getTableColumns(table)
-
-            if(length(classifiers) == 0)
-                return();
-
-            plotData <- data.frame(
-                matrix(vector(), 0, 3,
-                dimnames=list(c(), c("metric", "classifier", "value")))
-            )
-
-            for (classifier in classifiers) {
-                settings <- private$.getSettings(classifier)
-                predictions <- private$.getPredictions(task, classifier, settings)
-                scores <- private$.calculateScores(predictions, names(columns))[['general']]
-
-                for (name in names(scores)) {
-                    plotData[nrow(plotData) + 1,] = c(columns[[name]], classifier, round(scores[[name]], 2))
-                }
-
-                plot$setState(plotData)
-            }
-        },
-
-        .populatePerClassComparisonPlot = function(task) {
-            classifiers <- self$options$classifiersToUse
-            plot <- self$results$metricComparison$perClassComparisonPlot
-
-            table <- self$results$perClassMetrics$get(key = 'Decision tree ()')
-            columns <- private$.getTableColumns(table)
-
-            levels <- levels(task$truth())
-
-            if(length(classifiers) == 0)
-                return();
-
-
-          plotsData <- lapply(levels, function(level) {
-                    data.frame(matrix(vector(), 0, 3, dimnames=list(c(), c("metric", "classifier", "value"))))
-            })
-
-            names(plotsData) <- levels
-
-
-          for (classifier in classifiers) {
-            settings <- private$.getSettings(classifier)
-            predictions <- private$.getPredictions(task, classifier, settings)
-            scores <- private$.calculateScores(predictions, names(columns))[['class']]
-
-            for (name in levels) {
-                for(score in names(columns)) {
-                     plotsData[[name]][nrow(plotsData[[name]]) + 1,] = c(columns[[score]], classifier, scores[[name]][[score]])
-                }
-             }
-          }
-
-
-            plot$setState(plotsData)
-        },
-
-        .populatePerClassMetrics = function(task, scoreNames) {
-            classifiers <- self$options$classifiersToUse
-            tables <- self$results$perClassMetrics
-
-            levels <- levels(task$truth())
-
-            if(length(classifiers) == 0)
-                return();
-
-
-            for (classifier in classifiers) {
-                table <- tables$get(key = classifier)
-                table$setVisible(TRUE)
-
-                settings <- private$.getSettings(classifier)
-                predictions <- private$.getPredictions(task, classifier, settings)
-                scores <- private$.calculateScores(predictions, scoreNames)[['class']]
-
-                for(level in levels) {
-                   scores[[level]][['class']] <- level
-                   table$addRow(rowKey = level, values = scores[[level]])
-                }
-            }
+            return(columns[!is.na(columns)])
         },
 
         .getSettings = function(classifier) {
             settings <- regmatches(classifier, gregexpr("\\(.+?\\)", classifier))
 
-            if(!identical(settings[[1]], character(0))) {
-                classifierOptions <- substr(settings, 2, nchar(settings)-1)
+            if (!identical(settings[[1]], character(0))) {
+                classifierOptions <- substr(settings, 2, nchar(settings) - 1)
 
-                if(private$.isSettingsValid(classifierOptions)) {
+                if (private$.isSettingsValid(classifierOptions)) {
                     settings <- private$.getOptions(classifierOptions)
                 }
             }
-            return (settings)
+            return(settings)
         },
 
         .getPredictions = function(task, classifier, settings) {
@@ -192,7 +158,7 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             equalsCount <- stringr::str_count(settings, "=") # number of equals in user input settings
             commasCount <- stringr::str_count(settings, ",") # number of commas in user input settings
 
-            if(identical(settingsValid, character(0))) {
+            if (identical(settingsValid, character(0))) {
                 if (equalsCount > commasCount + 1) {
                     stop(errors$missingComma)
                 } else if (commasCount + 1 > equalsCount) {
@@ -201,58 +167,61 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                     stop(errors$unknown)
                 }
             }
-            return (TRUE)
+            return(TRUE)
         },
 
         .getOptions = function(settings) {
-          settings <- gsub("[[:space:]]", "", settings)
-          splitted <- strsplit(settings, ',')[[1]]
-          options <- list()
+            settings <- gsub("[[:space:]]", "", settings)
+            splitted <- strsplit(settings, ',')[[1]]
+            options <- list()
 
-          for (option in splitted) {
-            splittedOption <- strsplit(option, '=')[[1]]
-            optionName <- splittedOption[1]
-            optionValue <- splittedOption[2]
+            for (option in splitted) {
+                splittedOption <- strsplit(option, '=')[[1]]
+                optionName <- splittedOption[1]
+                optionValue <- splittedOption[2]
 
-            if(!is.na(as.numeric((splittedOption[2])))) {
-                optionValue <- as.numeric(optionValue)
+                if (!is.na(as.numeric((splittedOption[2])))) {
+                    optionValue <- as.numeric(optionValue)
+                }
+
+                if (optionValue == "TRUE" ||
+                    optionValue == "FALSE" ||
+                    optionValue == 'true' ||
+                    optionValue == 'false') {
+                    optionValue <- as.logical(optionValue)
+                }
+                options[[optionName]] <- optionValue
             }
-
-            if(optionValue == "TRUE" || optionValue == "FALSE" || optionValue == 'true' || optionValue == 'false') {
-                optionValue <- as.logical(optionValue)
-            }
-            options[[optionName]] <- optionValue
-          }
-          return(options)
+            return(options)
         },
 
-        .initLearner = function (classifier, options) {
-          if(grepl("KNN", classifier, fixed = TRUE)) {
-              learner <- lrn("classif.kknn", predict_type = 'prob')
-          } else if(grepl("Decision tree", classifier, fixed = TRUE)) {
-              learner <- lrn("classif.rpart", predict_type = 'prob')
-          } else if(grepl("Random forest", classifier, fixed = TRUE)) {
-             learner <- lrn("classif.ranger", predict_type = 'prob')
-          } else if(grepl("Naive bayes", classifier, fixed = TRUE)) {
-              learner <- lrn("classif.naive_bayes", predict_type = 'prob')
-          } else if(grepl("Logistic regression", classifier, fixed = TRUE)) {
-              learner <- lrn("classif.log_reg", predict_type = 'prob')
-          }
+        .initLearner = function(classifier, options) {
+            if (grepl("KNN", classifier, fixed = TRUE)) {
+                learner <- lrn("classif.kknn", predict_type = 'prob')
+            } else if (grepl("Decision tree", classifier, fixed = TRUE)) {
+                learner <- lrn("classif.rpart", predict_type = 'prob')
+            } else if (grepl("Random forest", classifier, fixed = TRUE)) {
+                learner <- lrn("classif.ranger", predict_type = 'prob')
+            } else if (grepl("Naive bayes", classifier, fixed = TRUE)) {
+                learner <- lrn("classif.naive_bayes", predict_type = 'prob')
+            } else if (grepl("Logistic regression", classifier, fixed = TRUE)) {
+                learner <- lrn("classif.log_reg", predict_type = 'prob')
+            }
 
-         if(!identical(options[[1]], character(0))) {
-            learner$param_set$values <- options
-         }
+            if (!identical(options[[1]], character(0))) {
+                learner$param_set$values <- options
+            }
 
-         return(learner)
+            return(learner)
         },
 
         .trainModel = function(task, learner) {
             if (self$options$testing == "split" | self$options$testing == "trainSet") {
                 predictions <- private$.trainTestSplit(task, learner)
-                return (predictions)
+                return(predictions)
             } else {
                 predictions <- private$.crossValidate(task, learner)
-                return (predictions$prediction())
+                return(predictions$prediction())
             }
         },
 
@@ -260,7 +229,7 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             resampling <- rsmp("cv", folds = self$options$noOfFolds)
             resampling$instantiate(task)
             rr <- resample(task, learner, resampling, store_models = TRUE)
-            rr
+            return (rr)
         },
 
         .trainTestSplit = function(task, learner) {
@@ -276,7 +245,7 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
 
             prediction <- learner$predict(task, row_ids = testSet)
 
-            prediction
+            return(prediction)
         },
 
         .calculateScores = function(predictions, outputScores) {
@@ -297,17 +266,17 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             })
 
             names(classScores) <- levels
-            classScores <- lapply(classScores, round , 3)
+            classScores <- lapply(classScores, round, 3)
 
             #calculate macro scores
             for (scoreName in outputScores) {
                 macros[scoreName] <- mean(sapply(levels, function(class) classScores[[class]][scoreName]))
             }
 
-            list(
+            return(list(
                 general = c(predictions$score(msrs(c('classif.acc', 'classif.ce', 'classif.bacc'))), macros),
                 class = classScores
-            )
+            ))
         },
 
         .convertToBinary = function(class, predictions) {
@@ -329,38 +298,43 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
         },
 
         .setOutput = function(task) {
-            preformatted <- self$results$get('preformatted')
             reporting <- self$options$reporting
+            classifiers <- self$options$classifiersToUse
+            levels <- levels(task$truth())
 
-            scores <- vector()
+            overallPlotData <- data.frame(
+                    matrix(vector(), 0, 3, dimnames=list(c(), c("metric", "classifier", "value")))
+            )
 
+            perClassPlotData <- lapply(levels, function(level) {
+                    data.frame(matrix(vector(), 0, 3, dimnames=list(c(), c("metric", "classifier", "value"))))
+            })
+            names(perClassPlotData) <- levels
 
+            for (classifier in classifiers) {
+                settings <- private$.getSettings(classifier)
+                predictions <- private$.getPredictions(task, classifier, settings)
 
-            if (any(reporting == 'AUC')) {
-                scores <- c(scores, "classif.auc")
+                if (any(reporting == 'AUC')) {
+                    private$.populateRocCurvePlots(classifier, predictions, levels)
+                }
 
-                private$.populateRocCurvePlots(task)
-            }
+                if (any(reporting == "classifMetrices") ) {
+                    private$.populateOverallMetrics(classifier, predictions)
+                }
 
-            if (any(reporting == "classifMetrices") ) {
-                scores <- c(scores, "classif.precision", "classif.recall", "classif.fbeta")
+                if (any(reporting == 'perClass')) {
+                    private$.populatePerClassMetrics(classifier, predictions, levels)
+                }
 
-                private$.populateOverallMetrics(task, scores)
-            }
-
-            if (any(reporting == 'perClass')) {
-                scores <- c(scores, "classif.precision", "classif.recall", "classif.fbeta")
-
-                private$.populatePerClassMetrics(task, scores)
-            }
-
-            if (any(reporting == 'plotMetricComparison')) {
-                    private$.populateMetricComparisonPlot(task)
-                    private$.populatePerClassComparisonPlot(task)
+                if (any(reporting == 'plotMetricComparison')) {
+                    overallPlotData <- private$.populateMetricComparisonPlot(classifier, predictions, overallPlotData)
+                    perClassPlotData <- private$.populatePerClassComparisonPlot(classifier, predictions, perClassPlotData)
+                }
             }
         },
 
-        .rocCurve = function(image,...) {
+        .rocCurve = function(image, ...) {
             plotData <- image$state
 
             plotList <- lapply(names(plotData), function(class) {
@@ -370,7 +344,8 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             plot <- ggpubr::ggarrange(plotlist = plotList,
                                       labels = names(plotData),
                                       font.label = list(size = 14, color = "black", family = NULL),
-                                      ncol = length(plotList), nrow = ceiling(length(names(plotData)) / 3))
+                                      ncol = length(plotList),
+                                      nrow = ceiling(length(names(plotData)) / 3))
 
             print(plot)
         },
@@ -379,17 +354,16 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             plotData <- image$state
 
             plot <- ggplot(
-                data=plotData,
-                aes(x=metric,
-                    y=value,
-                    fill=classifier)) +
-                labs(title='Overall metrics') +
-                geom_bar(stat="identity",
+                data = plotData,
+                aes(x = metric,
+                    y = value,
+                    fill = classifier)) +
+                labs(title = 'Overall metrics') +
+                geom_bar(stat = "identity",
                          position = position_dodge()
-            )
+                )
 
             print(plot)
-
         },
 
         .perClassMetricComparison = function(image, ...) {
@@ -397,24 +371,20 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
 
             plotList <- lapply(names(plotData), function(class) {
                 ggplot(
-                data=plotData[[class]],
-                aes(x=metric,
-                    y=value,
-                    fill=classifier)) +
-                labs(title=class) +
-                geom_bar(stat="identity",
-                         position = position_dodge()
-            )
+                    data = plotData[[class]],
+                    aes(x = metric,
+                        y = value,
+                        fill = classifier)) +
+                    labs(title = class) +
+                    geom_bar(stat = "identity",
+                             position = position_dodge()
+                    )
             })
 
             plot <- ggpubr::ggarrange(plotlist = plotList,
-                                      ncol = 1, nrow = length(plotList))
-
-
-
+                                      ncol = 1,
+                                      nrow = length(plotList))
             print(plot)
         }
-
-
     )
 )
