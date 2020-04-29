@@ -105,8 +105,7 @@ experimenterResults <- if (requireNamespace('jmvcore')) R6::R6Class(
         overallMetrics = function() private$.items[["overallMetrics"]],
         perClassMetrics = function() private$.items[["perClassMetrics"]],
         rocCurvePlots = function() private$.items[["rocCurvePlots"]],
-        metricComparisonPlot = function() private$.items[["metricComparisonPlot"]],
-        perClassComparisonPlot = function() private$.items[["perClassComparisonPlot"]],
+        metricComparison = function() private$.items[["metricComparison"]],
         text = function() private$.items[["text"]]),
     private = list(),
     public=list(
@@ -173,28 +172,24 @@ experimenterResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                 template=jmvcore::Table$new(
                     options=options,
                     title="($key)",
-                    visible=FALSE,
+                    visible="(reporting:perClass)",
                     columns=list(
                         list(
                             `name`="class", 
                             `title`="class name", 
-                            `type`="text", 
-                            `visible`="(reporting:perClass)"),
+                            `type`="text"),
                         list(
                             `name`="classif.precision", 
                             `title`="precision", 
-                            `type`="number", 
-                            `visible`="(reporting:perClass)"),
+                            `type`="number"),
                         list(
                             `name`="classif.recall", 
                             `title`="recall", 
-                            `type`="number", 
-                            `visible`="(reporting:perClass)"),
+                            `type`="number"),
                         list(
                             `name`="classif.fbeta", 
                             `title`="F-score", 
-                            `type`="number", 
-                            `visible`="(reporting:perClass)"),
+                            `type`="number"),
                         list(
                             `name`="classif.auc", 
                             `title`="AUC", 
@@ -212,22 +207,34 @@ experimenterResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                     width=600,
                     height=300,
                     renderFun=".rocCurve")))
-            self$add(jmvcore::Image$new(
-                options=options,
-                name="metricComparisonPlot",
-                title="Metric comparison",
-                visible="(reporting:plotMetricComparison)",
-                width=700,
-                height=300,
-                renderFun=".plotMetricComparison"))
-            self$add(jmvcore::Image$new(
-                options=options,
-                name="perClassComparisonPlot",
-                title="Per class metric comparison",
-                visible="(reporting:plotMetricComparison)",
-                width=700,
-                height=1000,
-                renderFun=".perClassMetricComparison"))
+            self$add(R6::R6Class(
+                inherit = jmvcore::Group,
+                active = list(
+                    metricComparisonPlot = function() private$.items[["metricComparisonPlot"]],
+                    perClassComparisonPlot = function() private$.items[["perClassComparisonPlot"]]),
+                private = list(),
+                public=list(
+                    initialize=function(options) {
+                        super$initialize(
+                            options=options,
+                            name="metricComparison",
+                            title="Metric comparison")
+                        self$add(jmvcore::Image$new(
+                            options=options,
+                            name="metricComparisonPlot",
+                            title="Metric comparison",
+                            visible="(reporting:plotMetricComparison)",
+                            width=700,
+                            height=300,
+                            renderFun=".plotMetricComparison"))
+                        self$add(jmvcore::Image$new(
+                            options=options,
+                            name="perClassComparisonPlot",
+                            title="Per class metric comparison",
+                            visible="(reporting:plotMetricComparison)",
+                            width=700,
+                            height=600,
+                            renderFun=".perClassMetricComparison"))}))$new(options=options))
             self$add(jmvcore::Preformatted$new(
                 options=options,
                 name="text"))}))
@@ -268,8 +275,8 @@ experimenterBase <- if (requireNamespace('jmvcore')) R6::R6Class(
 #'   \code{results$overallMetrics$overallMetricsTable} \tab \tab \tab \tab \tab a table \cr
 #'   \code{results$perClassMetrics} \tab \tab \tab \tab \tab an array of metrics for class for chosen algorithms \cr
 #'   \code{results$rocCurvePlots} \tab \tab \tab \tab \tab an array of roc curve plots for chosen algorithms \cr
-#'   \code{results$metricComparisonPlot} \tab \tab \tab \tab \tab plot for comparison of results of chosen algorithms \cr
-#'   \code{results$perClassComparisonPlot} \tab \tab \tab \tab \tab plot for comparison of results of specific class for chosen algorithms \cr
+#'   \code{results$metricComparison$metricComparisonPlot} \tab \tab \tab \tab \tab plot for comparison of results of chosen algorithms \cr
+#'   \code{results$metricComparison$perClassComparisonPlot} \tab \tab \tab \tab \tab plot for comparison of results of specific class for chosen algorithms \cr
 #'   \code{results$text} \tab \tab \tab \tab \tab a preformatted \cr
 #' }
 #'

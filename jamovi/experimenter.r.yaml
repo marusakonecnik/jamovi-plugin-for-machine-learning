@@ -48,24 +48,20 @@ items:
     template:
       title: ($key)
       type: Table
-      visible: FALSE
+      visible: (reporting:perClass)
       columns:
         - name: class
           title: 'class name'
           type: text
-          visible: (reporting:perClass)
         - name: classif.precision
           title: 'precision'
           type: number
-          visible: (reporting:perClass)
         - name: classif.recall
           title: 'recall'
           type: number
-          visible: (reporting:perClass)
         - name: classif.fbeta
           title: 'F-score'
           type: number
-          visible: (reporting:perClass)
         - name: classif.auc
           title: 'AUC'
           type: number
@@ -85,23 +81,28 @@ items:
       height: 300
       renderFun: .rocCurve
 
-  - name: metricComparisonPlot
+  - name: metricComparison
     title: Metric comparison
     visible: (reporting:plotMetricComparison)
-    type: Image
-    width:  700
-    height: 300
-    renderFun: .plotMetricComparison
-    description: plot for comparison of results of chosen algorithms
+    type: Group
+    items:
+      - name: metricComparisonPlot
+        title: Metric comparison
+        visible: (reporting:plotMetricComparison)
+        type: Image
+        width:  700
+        height: 300
+        renderFun: .plotMetricComparison
+        description: plot for comparison of results of chosen algorithms
 
-  - name: perClassComparisonPlot
-    title: Per class metric comparison
-    visible: (reporting:plotMetricComparison)
-    type: Image
-    width:  700
-    height: 1000
-    renderFun: .perClassMetricComparison
-    description: plot for comparison of results of specific class for chosen algorithms
+      - name: perClassComparisonPlot
+        title: Per class metric comparison
+        visible: (reporting:plotMetricComparison)
+        type: Image
+        width:  700
+        height: 600
+        renderFun: .perClassMetricComparison
+        description: plot for comparison of results of specific class for chosen algorithms
 
 
   - name:  text

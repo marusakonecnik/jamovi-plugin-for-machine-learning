@@ -30,11 +30,12 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
                 return();
 
             table <- self$results$overallMetrics$overallMetricsTable
+            columns <- private$.getTableColumns(table)
 
             for (classifier in classifiers) {
                 settings <- private$.getSettings(classifier)
                 predictions <- private$.getPredictions(task, classifier, settings)
-                scores <- private$.calculateScores(predictions, scoreNames)[['general']]
+                scores <- private$.calculateScores(predictions, names(columns))[['general']]
 
                 row <- as.list(sapply(names(scores), function(name) scores[[name]], USE.NAMES = TRUE ))
                 row[['classifier']] <- classifier
@@ -72,7 +73,7 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
 
         .populateMetricComparisonPlot = function(task) {
             classifiers <- self$options$classifiersToUse
-            plot <- self$results$metricComparisonPlot
+            plot <- self$results$metricComparison$metricComparisonPlot
 
             table <- self$results$overallMetrics$overallMetricsTable
             columns <- private$.getTableColumns(table)
@@ -100,9 +101,9 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
 
         .populatePerClassComparisonPlot = function(task) {
             classifiers <- self$options$classifiersToUse
-            plot <- self$results$perClassComparisonPlot
+            plot <- self$results$metricComparison$perClassComparisonPlot
 
-            table <- self$results$overallMetrics$overallMetricsTable
+            table <- self$results$perClassMetrics$get(key = 'Decision tree ()')
             columns <- private$.getTableColumns(table)
 
             levels <- levels(task$truth())
@@ -123,12 +124,14 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             predictions <- private$.getPredictions(task, classifier, settings)
             scores <- private$.calculateScores(predictions, names(columns))[['class']]
 
-            for (name in names(scores)) {
-                for(score in names(scores[[name]])) {
-                     plotsData[[name]][nrow(plotsData[[name]]) + 1,] = c(score, classifier, scores[[name]][[score]])
+            for (name in levels) {
+                for(score in names(columns)) {
+                     plotsData[[name]][nrow(plotsData[[name]]) + 1,] = c(columns[[score]], classifier, scores[[name]][[score]])
                 }
              }
           }
+
+
             plot$setState(plotsData)
         },
 
@@ -331,6 +334,8 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
 
             scores <- vector()
 
+
+
             if (any(reporting == 'AUC')) {
                 scores <- c(scores, "classif.auc")
 
@@ -350,12 +355,8 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             }
 
             if (any(reporting == 'plotMetricComparison')) {
-                if(any(reporting == 'classifMetrices'))
                     private$.populateMetricComparisonPlot(task)
-                if(any(reporting == 'perClass'))
                     private$.populatePerClassComparisonPlot(task)
-
-
             }
         },
 
@@ -369,7 +370,7 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             plot <- ggpubr::ggarrange(plotlist = plotList,
                                       labels = names(plotData),
                                       font.label = list(size = 14, color = "black", family = NULL),
-                                      ncol = 3, nrow = ceiling(length(names(plotData)) / 3))
+                                      ncol = length(plotList), nrow = ceiling(length(names(plotData)) / 3))
 
             print(plot)
         },
@@ -407,7 +408,9 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
             })
 
             plot <- ggpubr::ggarrange(plotlist = plotList,
-                                      ncol = 1, nrow = 3)
+                                      ncol = 1, nrow = length(plotList))
+
+
 
             print(plot)
         }
