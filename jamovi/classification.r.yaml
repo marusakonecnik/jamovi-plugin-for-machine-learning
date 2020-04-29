@@ -15,7 +15,7 @@ items:
     items:
       - name:  matrix
         title: 'Confusion matrix'
-        visible: FALSE
+        visible: (reporting:confusionMatrix)
         type: Table
         rows:  0
         columns:
@@ -28,7 +28,7 @@ items:
     type: Group
     items:
       - name:  general
-        visible: FALSE
+        visible: (reporting:classifMetrices)
         title: 'General'
         type: Table
         rows:  0
@@ -42,7 +42,7 @@ items:
       - name: class
         title: 'Per class'
         type: Table
-        visible: FALSE
+        visible: (reporting:classifMetrices)
         rows:  0
         columns:
           - name: class
@@ -51,31 +51,31 @@ items:
           - name: classif.precision
             title: 'precision'
             type: number
-            visible: FALSE
+            visible: (reporting:classifMetrices)
           - name: classif.recall
             title: 'recall'
             type: number
-            visible: FALSE
+            visible: (reporting:classifMetrices)
           - name: classif.fbeta
             title: 'F-score'
             type: number
-            visible: FALSE
+            visible: (reporting:classifMetrices)
           - name: classif.auc
             title: 'AUC'
             type: number
-            visible: FALSE
+            visible: (reporting:AUC)
 
   - name: rocCurvePlot
     title: ROC curve
-    visible: FALSE
+    visible: (reporting:AUC)
     type: Image
     width:  400
     height: 300
-    renderFun: .rocCurve
+    renderFun: .plotRocCurve
 
   - name: decisionTreeModel
     title: Decision tree model
-    visible: FALSE
+    visible: (plotDecisionTree)
     type: Image
     width:  400
     height: 300
@@ -83,12 +83,11 @@ items:
 
   - name: predictedFreqPlot
     title: Predicted frequencies
-    visible: FALSE
+    visible: (predictedFreq)
     type: Image
     width:  350
     height: 450
-    renderFun: .frequenciesPlot
-
+    renderFun: .plotFrequencies
 
   - name: printRandForest
     type: Group
@@ -96,7 +95,7 @@ items:
     items:
       - name: randomForestModel
         title: ''
-        visible: FALSE
+        visible: (printRandForest)
         type: Table
         rows: 8
         columns:

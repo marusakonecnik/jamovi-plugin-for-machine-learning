@@ -262,7 +262,7 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                             options=options,
                             name="matrix",
                             title="Confusion matrix",
-                            visible=FALSE,
+                            visible="(reporting:confusionMatrix)",
                             rows=0,
                             columns=list(
                                 list(
@@ -284,7 +284,7 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                         self$add(jmvcore::Table$new(
                             options=options,
                             name="general",
-                            visible=FALSE,
+                            visible="(reporting:classifMetrices)",
                             title="General",
                             rows=0,
                             columns=list(
@@ -300,7 +300,7 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                             options=options,
                             name="class",
                             title="Per class",
-                            visible=FALSE,
+                            visible="(reporting:classifMetrices)",
                             rows=0,
                             columns=list(
                                 list(
@@ -311,35 +311,35 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                                     `name`="classif.precision", 
                                     `title`="precision", 
                                     `type`="number", 
-                                    `visible`=FALSE),
+                                    `visible`="(reporting:classifMetrices)"),
                                 list(
                                     `name`="classif.recall", 
                                     `title`="recall", 
                                     `type`="number", 
-                                    `visible`=FALSE),
+                                    `visible`="(reporting:classifMetrices)"),
                                 list(
                                     `name`="classif.fbeta", 
                                     `title`="F-score", 
                                     `type`="number", 
-                                    `visible`=FALSE),
+                                    `visible`="(reporting:classifMetrices)"),
                                 list(
                                     `name`="classif.auc", 
                                     `title`="AUC", 
                                     `type`="number", 
-                                    `visible`=FALSE))))}))$new(options=options))
+                                    `visible`="(reporting:AUC)"))))}))$new(options=options))
             self$add(jmvcore::Image$new(
                 options=options,
                 name="rocCurvePlot",
                 title="ROC curve",
-                visible=FALSE,
+                visible="(reporting:AUC)",
                 width=400,
                 height=300,
-                renderFun=".rocCurve"))
+                renderFun=".plotRocCurve"))
             self$add(jmvcore::Image$new(
                 options=options,
                 name="decisionTreeModel",
                 title="Decision tree model",
-                visible=FALSE,
+                visible="(plotDecisionTree)",
                 width=400,
                 height=300,
                 renderFun=".printDecisionTree"))
@@ -347,10 +347,10 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                 options=options,
                 name="predictedFreqPlot",
                 title="Predicted frequencies",
-                visible=FALSE,
+                visible="(predictedFreq)",
                 width=350,
                 height=450,
-                renderFun=".frequenciesPlot"))
+                renderFun=".plotFrequencies"))
             self$add(R6::R6Class(
                 inherit = jmvcore::Group,
                 active = list(
@@ -366,7 +366,7 @@ classificationResults <- if (requireNamespace('jmvcore')) R6::R6Class(
                             options=options,
                             name="randomForestModel",
                             title="",
-                            visible=FALSE,
+                            visible="(printRandForest)",
                             rows=8,
                             columns=list(
                                 list(

@@ -36,11 +36,10 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
 
         .populatePerClassMetrics = function(classifier, predictions, levels) {
             if(length(self$options$classifiersToUse) == 0)
-            return();
+                return();
 
             tables <- self$results$perClassMetrics
             table <- tables$get(key = classifier)
-            table$setVisible(TRUE)
 
             columns <- private$.getTableColumns(table)
 
@@ -65,6 +64,7 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
 
         .populateMetricComparisonPlot = function(classifier, predictions, plotData) {
             classifiers <- self$options$classifiersToUse
+
             if(length(classifiers) == 0)
                 return()
 
@@ -89,6 +89,7 @@ experimenterClass <- if (requireNamespace('jmvcore')) R6::R6Class(
 
         .populatePerClassComparisonPlot = function(classifier, predictions, plotsData) {
             classifiers <- self$options$classifiersToUse
+
             if(length(classifiers) == 0)
                 return();
 
