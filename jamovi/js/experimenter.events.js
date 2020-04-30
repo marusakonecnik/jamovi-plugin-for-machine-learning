@@ -13,18 +13,6 @@ const events = {
         setSettingsPlaceHolder(ui);
     },
 
-    create: function (ui) {
-        console.log('created was called');
-        let availableClassifiers = ["Decision tree", "Random forest", "KNN", 'Logistic regression', 'Naive bayes'];
-
-        ui.classifiers.setValue(this.base.valuesToItems(availableClassifiers, FormatDef.variable));
-
-        ui.classifiers.value().forEach(classifier => classifier.$el.click(function () {
-            ui.classifierSettings.placeholder = classifier.value.raw;
-        }));
-
-    },
-
     onChange_classifiersList: function (ui) {
         let lastElementIndex = ui.classifiersToUse.getControls().length - 1;
         let settings = document.getElementById('settings').value;
@@ -44,38 +32,38 @@ const events = {
     },
 };
 
-var setSettingsPlaceHolder = function (ui) {
+    var setSettingsPlaceHolder = function (ui) {
 
-    var textarea = document.createElement("TEXTAREA");
-    textarea.cols = 94.5;
-    textarea.rows = 3;
-    textarea.id = "settings";
+        var textarea = document.createElement("TEXTAREA");
+        textarea.cols = 70;
+        textarea.rows = 3;
+        textarea.id = "settings";
+        textarea.style = "margin-left: 10px;";
 
-    ui.classifierSettings.$input = ui.classifierSettings.$input.replaceWith(textarea);
-    ui.classifierSettings.$label.css({'left': '-8px'});
+        ui.classifierSettings.$input = ui.classifierSettings.$input.replaceWith(textarea);
 
-    ui.classifiers.value().forEach(classifier => classifier.$el.click(function () {
-        switch (classifier.value.raw) {
-            case "Decision tree":
-                textarea.placeholder = settings.DECISION_TREE;
-                break;
-            case "KNN":
-                textarea.placeholder = settings.KNN;
-                break;
-            case "Naive bayes":
-                textarea.placeholder = settings.NAIVE_BAYES;
-                break;
-            case "Logistic regression":
-                textarea.placeholder = settings.LOGISTIC_REGRESSION;
-                break;
-            case "Random forest":
-                textarea.placeholder = settings.RANDOM_FOREST;
-                break;
-            default:
-                textarea.placeholder = settings.DEFAULT;
-                break;
-        }
-    }));
-};
+        ui.classifiers.value().forEach(classifier => classifier.$el.click(function () {
+            switch (classifier.value.raw) {
+                case "Decision tree":
+                    textarea.placeholder = settings.DECISION_TREE;
+                    break;
+                case "KNN":
+                    textarea.placeholder = settings.KNN;
+                    break;
+                case "Naive bayes":
+                    textarea.placeholder = settings.NAIVE_BAYES;
+                    break;
+                case "Logistic regression":
+                    textarea.placeholder = settings.LOGISTIC_REGRESSION;
+                    break;
+                case "Random forest":
+                    textarea.placeholder = settings.RANDOM_FOREST;
+                    break;
+                default:
+                    textarea.placeholder = settings.DEFAULT;
+                    break;
+            }
+        }));
+    };
 
 module.exports = events;

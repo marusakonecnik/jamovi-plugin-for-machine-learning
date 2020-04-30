@@ -5,7 +5,6 @@ stage: 0
 compilerMode: tame
 events:
   update: './experimenter.events::update'
-  loaded: './experimenter.events::create'
 
 children:
   - type: VariableSupplier
