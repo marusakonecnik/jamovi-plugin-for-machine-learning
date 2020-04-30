@@ -26,7 +26,7 @@ const events = {
     },
 
     onUpdate_classifiersSupplier: function (ui) {
-        let availableClassifiers = ["Decision tree", "Random forest", "KNN", 'Logistic regression', 'Naive bayes'];
+        let availableClassifiers = ["Decision tree", "Random forest", "KNN", 'Logistic regression', 'Naive Bayes'];
 
         ui.classifiers.setValue(this.base.valuesToItems(availableClassifiers, FormatDef.variable));
     },

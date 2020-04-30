@@ -68,7 +68,7 @@ items:
           visible: (reporting:AUC)
 
   - name: rocCurvePlots
-    title: Roc curve plots
+    title: ROC curve plots
     type: Array
     description: an array of roc curve plots for chosen algorithms
     items: (classifiersToUse)
