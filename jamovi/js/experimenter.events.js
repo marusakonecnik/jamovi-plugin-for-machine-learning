@@ -35,7 +35,7 @@ const events = {
     var setSettingsPlaceHolder = function (ui) {
 
         var textarea = document.createElement("TEXTAREA");
-        textarea.cols = 70;
+        textarea.cols = 50;
         textarea.rows = 3;
         textarea.id = "settings";
         textarea.style = "margin-left: 10px;";
